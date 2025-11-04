@@ -1,0 +1,300 @@
+
+> my-app@0.1.0 client
+> react-scripts start
+
+(node:31961) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:31961) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:31961) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+Starting the development server...
+
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
+Failed to compile.
+
+Module not found: Error: Can't resolve '../../../assets/img/bh-l.png' in '/Users/vladislavlatfulin/Documents/book-store/src/component/Common/Footer'
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+ERROR in ./src/component/Common/Footer/index.js 4:0-48
+Module not found: Error: Can't resolve '../../../assets/img/bh-l.png' in '/Users/vladislavlatfulin/Documents/book-store/src/component/Common/Footer'
+
+ERROR in ./src/component/Common/Header/index.js 7:0-48
+Module not found: Error: Can't resolve '../../../assets/img/bh-l.png' in '/Users/vladislavlatfulin/Documents/book-store/src/component/Common/Header'
+
+webpack compiled with 2 errors and 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
+Failed to compile.
+
+Module not found: Error: Can't resolve '../img/furniture/banner/libr1.jpg' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+ERROR in ./src/assets/css/style.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./src/assets/css/style.css) 9:36-97
+Module not found: Error: Can't resolve '../img/furniture/banner/libr1.jpg' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+
+webpack compiled with 1 error and 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
+Failed to compile.
+
+Module not found: Error: Can't resolve '../img/furniture/banner/libr2.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+ERROR in ./src/assets/css/style.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./src/assets/css/style.css) 11:36-98
+Module not found: Error: Can't resolve '../img/furniture/banner/libr2.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+
+webpack compiled with 1 error and 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
+Failed to compile.
+
+Module not found: Error: Can't resolve '../img/furniture/banner/lbbb22.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+ERROR in ./src/assets/css/style.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./src/assets/css/style.css) 10:36-99
+Module not found: Error: Can't resolve '../img/furniture/banner/lbbb22.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+
+webpack compiled with 1 error and 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
+Failed to compile.
+
+Module not found: Error: Can't resolve '../../../assets/img/furniture/banner/lB2.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/component/Furniture/BannerBottom'
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+ERROR in ./src/component/Furniture/BannerBottom/index.js 8:0-65
+Module not found: Error: Can't resolve '../../../assets/img/furniture/banner/lB2.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/component/Furniture/BannerBottom'
+
+webpack compiled with 1 error and 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
+Failed to compile.
+
+Module not found: Error: Can't resolve '../../../assets/img/furniture/banner/LB1.jpg' in '/Users/vladislavlatfulin/Documents/book-store/src/component/Furniture/BannerBottom'
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+ERROR in ./src/component/Furniture/BannerBottom/index.js 7:0-64
+Module not found: Error: Can't resolve '../../../assets/img/furniture/banner/LB1.jpg' in '/Users/vladislavlatfulin/Documents/book-store/src/component/Furniture/BannerBottom'
+
+webpack compiled with 1 error and 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
+Failed to compile.
+
+Module not found: Error: Can't resolve '../img/common/shop77.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+ERROR in ./src/assets/css/style.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./src/assets/css/style.css) 5:36-89
+Module not found: Error: Can't resolve '../img/common/shop77.avif' in '/Users/vladislavlatfulin/Documents/book-store/src/assets/css'
+
+webpack compiled with 1 error and 2 warnings
+No issues found.
+Compiling...
+Compiled with warnings.
+
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+[eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in ./node_modules/@reduxjs/toolkit/dist/redux-toolkit.esm.js
+Module Warning (from ./node_modules/source-map-loader/dist/cjs.js):
+Failed to parse source map from '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map' file: Error: ENOENT: no such file or directory, open '/Users/vladislavlatfulin/Documents/book-store/node_modules/@reduxjs/toolkit/dist/module.js.map'
+
+WARNING in [eslint] 
+src/component/Login/index.js
+  Line 26:43:  Unexpected string concatenation of literals  no-useless-concat
+
+webpack compiled with 2 warnings
+No issues found.
