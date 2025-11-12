@@ -25,10 +25,14 @@ fi
 if [ -z "$DB_HOST" ] || [ "$DB_HOST" = "localhost" ]; then
     PGDUMP_HOST_ARGS=""
     PGDUMP_PORT_ARGS=""
+    PSQL_HOST_ARGS=""
+    PSQL_PORT_ARGS=""
     echo "🔌 Используется Unix socket (peer authentication, без пароля)"
 else
     PGDUMP_HOST_ARGS="-h ${DB_HOST}"
     PGDUMP_PORT_ARGS="-p ${DB_PORT}"
+    PSQL_HOST_ARGS="-h ${DB_HOST}"
+    PSQL_PORT_ARGS="-p ${DB_PORT}"
     echo "🔌 Используется TCP/IP подключение к ${DB_HOST}:${DB_PORT}"
 fi
 
@@ -47,6 +51,55 @@ fi
 
 echo "✅ pg_dump найден"
 echo "👤 Используется пользователь БД: ${DB_USER}"
+
+# Проверяем существование пользователя PostgreSQL
+echo "🔍 Проверка пользователя PostgreSQL..."
+# Сначала пытаемся подключиться как текущий пользователь для проверки
+if psql ${PSQL_HOST_ARGS} ${PSQL_PORT_ARGS} -d postgres -c "\du" 2>/dev/null | grep -qw "${DB_USER}"; then
+    echo "✅ Пользователь '${DB_USER}' существует в PostgreSQL"
+else
+    # Если не получилось, пробуем найти существующего суперпользователя
+    # Сначала пробуем подключиться без указания пользователя (peer auth)
+    EXISTING_SUPERUSER=$(psql ${PSQL_HOST_ARGS} ${PSQL_PORT_ARGS} -d postgres -t -c "SELECT rolname FROM pg_roles WHERE rolsuper = true LIMIT 1;" 2>/dev/null | xargs)
+    
+    if [ -z "$EXISTING_SUPERUSER" ]; then
+        # Если не удалось подключиться, пробуем создать пользователя напрямую
+        echo "⚠️  Пользователь '${DB_USER}' не найден в PostgreSQL"
+        echo "📝 Попытка создать пользователя '${DB_USER}'..."
+        if createuser -s "${DB_USER}" 2>/dev/null; then
+            echo "✅ Пользователь '${DB_USER}' создан успешно"
+        else
+            echo "❌ Не удалось создать пользователя автоматически"
+            echo "💡 Создайте пользователя вручную от имени существующего суперпользователя:"
+            echo "   # Сначала найдите существующего пользователя:"
+            echo "   psql -d postgres -c \"\\du\""
+            echo "   # Затем создайте нового пользователя:"
+            echo "   createuser -s ${DB_USER}"
+            echo "   # или от имени существующего:"
+            echo "   createuser -U existing_user -s ${DB_USER}"
+            exit 1
+        fi
+    else
+        # Проверяем через существующего суперпользователя
+        if psql ${PSQL_HOST_ARGS} ${PSQL_PORT_ARGS} -U "${EXISTING_SUPERUSER}" -d postgres -c "\du" 2>/dev/null | grep -qw "${DB_USER}"; then
+            echo "✅ Пользователь '${DB_USER}' существует в PostgreSQL"
+        else
+            echo "⚠️  Пользователь '${DB_USER}' не найден в PostgreSQL"
+            echo "📝 Создание пользователя '${DB_USER}' от имени '${EXISTING_SUPERUSER}'..."
+            if createuser -U "${EXISTING_SUPERUSER}" -s "${DB_USER}" 2>/dev/null; then
+                echo "✅ Пользователь '${DB_USER}' создан успешно"
+            else
+                echo "❌ Не удалось создать пользователя автоматически"
+                echo "💡 Создайте пользователя вручную:"
+                echo "   createuser -U ${EXISTING_SUPERUSER} -s ${DB_USER}"
+                echo ""
+                echo "💡 Или используйте существующего пользователя:"
+                echo "   DB_USER=${EXISTING_SUPERUSER} ./export-database.sh"
+                exit 1
+            fi
+        fi
+    fi
+fi
 
 # Создаем директорию database если её нет
 mkdir -p database

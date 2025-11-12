@@ -72,6 +72,49 @@ fi
 
 echo "✅ psql найден"
 
+# Проверяем существование пользователя PostgreSQL
+echo "🔍 Проверка пользователя PostgreSQL..."
+# Сначала пытаемся подключиться как текущий пользователь для проверки
+if psql ${PSQL_HOST_ARGS} ${PSQL_PORT_ARGS} -d postgres -c "\du" 2>/dev/null | grep -qw "${DB_USER}"; then
+    echo "✅ Пользователь '${DB_USER}' существует в PostgreSQL"
+else
+    # Если не получилось, пробуем найти существующего суперпользователя
+    EXISTING_SUPERUSER=$(psql ${PSQL_HOST_ARGS} ${PSQL_PORT_ARGS} -d postgres -t -c "SELECT rolname FROM pg_roles WHERE rolsuper = true LIMIT 1;" 2>/dev/null | xargs)
+    
+    if [ -z "$EXISTING_SUPERUSER" ]; then
+        # Если не удалось подключиться, пробуем создать пользователя напрямую
+        echo "⚠️  Пользователь '${DB_USER}' не найден в PostgreSQL"
+        echo "📝 Попытка создать пользователя '${DB_USER}'..."
+        if createuser -s "${DB_USER}" 2>/dev/null; then
+            echo "✅ Пользователь '${DB_USER}' создан успешно"
+        else
+            echo "❌ Не удалось создать пользователя автоматически"
+            echo "💡 Создайте пользователя вручную:"
+            echo "   createuser -s ${DB_USER}"
+            exit 1
+        fi
+    else
+        # Проверяем через существующего суперпользователя
+        if psql ${PSQL_HOST_ARGS} ${PSQL_PORT_ARGS} -U "${EXISTING_SUPERUSER}" -d postgres -c "\du" 2>/dev/null | grep -qw "${DB_USER}"; then
+            echo "✅ Пользователь '${DB_USER}' существует в PostgreSQL"
+        else
+            echo "⚠️  Пользователь '${DB_USER}' не найден в PostgreSQL"
+            echo "📝 Создание пользователя '${DB_USER}' от имени '${EXISTING_SUPERUSER}'..."
+            if createuser -U "${EXISTING_SUPERUSER}" -s "${DB_USER}" 2>/dev/null; then
+                echo "✅ Пользователь '${DB_USER}' создан успешно"
+            else
+                echo "❌ Не удалось создать пользователя автоматически"
+                echo "💡 Создайте пользователя вручную:"
+                echo "   createuser -U ${EXISTING_SUPERUSER} -s ${DB_USER}"
+                echo ""
+                echo "💡 Или используйте существующего пользователя:"
+                echo "   DB_USER=${EXISTING_SUPERUSER} ./import-database.sh ${DUMP_FILE}"
+                exit 1
+            fi
+        fi
+    fi
+fi
+
 # Проверяем существование базы данных, если нет - создаем
 echo "📊 Проверка базы данных '${DB_NAME}'..."
 if psql ${PSQL_HOST_ARGS} ${PSQL_PORT_ARGS} -U "${DB_USER}" -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "${DB_NAME}"; then
