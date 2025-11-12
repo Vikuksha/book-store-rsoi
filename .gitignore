@@ -1,1 +1,4 @@
 node_modules
+
+database/dump_*.sql
+database/dump_latest.sql

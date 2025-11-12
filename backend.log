@@ -1,4 +1,4 @@
-[dotenv@17.2.3] injecting env (14) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (14) from .env -- tip: ⚙️  override existing env vars with { override: true }
 🚀 Server running on port 3003
 📊 Database: bookstore
 🌐 Frontend URL: http://localhost:3000

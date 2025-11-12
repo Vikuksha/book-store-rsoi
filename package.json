@@ -56,7 +56,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "db:setup": "./setup-database.sh",
-    "db:reset": "dropdb bookstore && createdb bookstore && psql bookstore < database/schema.sql"
+    "db:reset": "dropdb bookstore && createdb bookstore && psql bookstore < database/schema.sql",
+    "db:export": "./export-database.sh",
+    "db:import": "bash -c './import-database.sh \"$@\"' --"
   },
   "eslintConfig": {
     "extends": [
