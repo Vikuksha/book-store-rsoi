@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Switch, Route, BrowserRouter } from 'react-rou
 import loadable from './component/Common/loader/loadable';
 import Loading from './component/Common/loader';
 import pMinDelay from 'p-min-delay';
+import BookLoader from './components/BookLoader';
 
 
 const ShopGrid = loadable(() => pMinDelay(import('./page/shop'), 250), { fallback: <Loading /> });
@@ -49,6 +50,7 @@ const App = () => {
     <>
       {/* <BrowserRouter> */}
         <Router>
+          <BookLoader />
           <ScrollToTop />
           <Switch>
             <Route path='/' exact component={Furniture} />

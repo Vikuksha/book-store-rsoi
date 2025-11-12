@@ -1,28 +1,128 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
+import ServiceManager from "../../services/ServiceManager";
 
 const TotalCart = (props) => {
   let carts = useSelector((state) => state.products.carts);
+  const [discountInfo, setDiscountInfo] = useState({ 
+    discount: 0, 
+    discountPercent: 0, 
+    finalTotal: 0 
+  });
+
+  // Алгоритм расчёта скидки
+  const calculateDiscount = (subtotal, orderQuantity) => {
+    let discountPercent = 0;
+    
+    // Скидка 5% при заказе от 50$
+    if (subtotal >= 50) {
+      discountPercent = 5;
+    }
+    
+    // Скидка 10% при заказе от 100$
+    if (subtotal >= 100) {
+      discountPercent = 10;
+    }
+    
+    // Скидка 15% при заказе от 200$
+    if (subtotal >= 200) {
+      discountPercent = 15;
+    }
+    
+    // Дополнительная скидка 2% при заказе 5+ книг
+    if (orderQuantity >= 5) {
+      discountPercent += 2;
+    }
+    
+    // Максимальная скидка 20%
+    if (discountPercent > 20) {
+      discountPercent = 20;
+    }
+    
+    const discount = (subtotal * discountPercent) / 100;
+    
+    return {
+      discount,
+      discountPercent,
+      finalTotal: subtotal - discount
+    };
+  };
+
+  useEffect(() => {
+    const subtotal = cartTotal();
+    const orderQuantity = carts.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    const discount = calculateDiscount(subtotal, orderQuantity);
+    setDiscountInfo({
+      discount: discount.discount || 0,
+      discountPercent: discount.discountPercent || 0,
+      finalTotal: discount.finalTotal || subtotal
+    });
+  }, [carts]);
 
   const cartTotal = () => {
     return carts.reduce(function (total, item) {
-      return total + (item.quantity || 1) * item.price;
+      const price = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+      return total + (item.quantity || 1) * price;
     }, 0);
   };
 
-  const handleCheckout = (e) => {
-    e.preventDefault(); // Default behaviorni to'xtatish
-    Swal.fire({
-      icon: "success",
-      title: "Successfully shopping!",
-      text: "Your order has been placed.",
-      confirmButtonText: "OK",
-    }).then(() => {
-      // Agar SweetAlertdan OK bosilsa, checkout sahifasiga o'tish
-      window.location.href = props.fullGrid ? "/order-success" : "/";
-    });
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+    
+    // Проверка наличия на складе перед оформлением заказа
+    try {
+      const serviceManager = ServiceManager.getInstance();
+      const compositions = carts.map(item => ({
+        ID_Book: typeof item.id === 'string' ? parseInt(item.id) : item.id,
+        Books_number: item.quantity || 1
+      }));
+      
+      // Проверяем наличие на складе
+      const stockCheckResponse = await fetch(`${process.env.REACT_APP_SERVER_API || 'http://localhost:3003'}/api/order/check-stock`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ compositions })
+      });
+      
+      const stockCheck = await stockCheckResponse.json();
+      
+      if (!stockCheck.allAvailable) {
+        const unavailableBooks = stockCheck.stockCheck
+          .filter(item => !item.sufficient)
+          .map(item => `"${item.bookTitle}" (запрошено: ${item.requested}, доступно: ${item.available})`)
+          .join('\n');
+        
+        Swal.fire({
+          icon: "error",
+          title: "Недостаточно товара на складе",
+          text: `Следующие книги недоступны в нужном количестве:\n${unavailableBooks}`,
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+      
+      // Если всё в наличии, продолжаем оформление заказа
+      Swal.fire({
+        icon: "success",
+        title: "Заказ успешно оформлен!",
+        text: "Ваш заказ был размещён.",
+        confirmButtonText: "OK",
+      }).then(() => {
+        window.location.href = props.fullGrid ? "/order-success" : "/";
+      });
+    } catch (error) {
+      console.error('Error checking stock:', error);
+      Swal.fire({
+        icon: "error",
+        title: "Ошибка",
+        text: "Не удалось проверить наличие товара. Попробуйте позже.",
+        confirmButtonText: "OK",
+      });
+    }
   };
 
   return (
@@ -34,19 +134,28 @@ const TotalCart = (props) => {
         <div className="coupon_inner">
           <div className="cart_subtotal">
             <p>Subtotal</p>
-            <p className="cart_amount">${cartTotal()}.00</p>
+            <p className="cart_amount">${(cartTotal() || 0).toFixed(2)}</p>
           </div>
+          {discountInfo && discountInfo.discountPercent > 0 && (
+            <div className="cart_subtotal">
+              <p>Скидка ({discountInfo.discountPercent || 0}%)</p>
+              <p className="cart_amount" style={{ color: '#28a745' }}>
+                -${(discountInfo.discount || 0).toFixed(2)}
+              </p>
+            </div>
+          )}
           <div className="cart_subtotal ">
             <p>Shipping</p>
             <p className="cart_amount">
-              <span>Flat Rate:</span> $00
+              <span>Flat Rate:</span> $0.00
             </p>
           </div>
-          {/* <a href="#!">Calculate shipping</a> */}
 
           <div className="cart_subtotal">
             <p>Total</p>
-            <p className="cart_amount">${cartTotal()}.00</p>
+            <p className="cart_amount">
+              <strong>${((discountInfo?.finalTotal ?? cartTotal()) || 0).toFixed(2)}</strong>
+            </p>
           </div>
           <div className="checkout_btn">
             <Link

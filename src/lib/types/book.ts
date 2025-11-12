@@ -6,6 +6,7 @@ export interface Book {
   Price: number; // DECIMAL(10,2)
   Stock_quantity: number; // INT
   Publishing_year: number; // INT
+  Description?: string; // TEXT (optional)
 }
 
 export interface BookInput {
@@ -14,6 +15,7 @@ export interface BookInput {
   Price: number;
   Stock_quantity: number;
   Publishing_year: number;
+  Description?: string;
 }
 
 export interface BookUpdateInput {
@@ -23,6 +25,7 @@ export interface BookUpdateInput {
   Price?: number;
   Stock_quantity?: number;
   Publishing_year?: number;
+  Description?: string;
 }
 
 export interface BookInquiry {
@@ -33,4 +36,6 @@ export interface BookInquiry {
   publishing_year?: number;
   min_price?: number;
   max_price?: number;
+  in_stock?: boolean;
+  sort_by?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'publishing_year_desc' | 'publishing_year_asc' | 'title_asc' | 'title_desc' | 'rating_desc' | 'popularity';
 }

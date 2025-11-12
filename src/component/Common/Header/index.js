@@ -96,28 +96,56 @@ const Header = () => {
   };
 
   // Sticky Menu Area
+  // Header теперь всегда фиксирован, логика isSticky не нужна
   useEffect(() => {
-    const handleScroll = () => isSticky();
-    window.addEventListener("scroll", handleScroll);
+    // Функция для расчета и установки отступа
+    const updatePadding = () => {
+      const topHeader = document.querySelector('#top_header');
+      const header = document.querySelector('.header-section');
+      
+      const mobileHeader = document.querySelector('.mobile-header');
+      
+      if (topHeader && header) {
+        // Десктопная версия
+        const topHeaderHeight = topHeader.offsetHeight || 40;
+        const headerHeight = header.offsetHeight || 80;
+        const totalHeight = topHeaderHeight + headerHeight;
+        
+        document.body.style.paddingTop = `${totalHeight}px`;
+      } else if (topHeader && mobileHeader) {
+        // Мобильная версия
+        const topHeaderHeight = topHeader.offsetHeight || 40;
+        const mobileHeaderHeight = mobileHeader.offsetHeight || 60;
+        const totalHeight = topHeaderHeight + mobileHeaderHeight;
+        
+        document.body.style.paddingTop = `${totalHeight}px`;
+      } else if (topHeader) {
+        // Если только TopHeader виден
+        const topHeaderHeight = topHeader.offsetHeight || 40;
+        document.body.style.paddingTop = `${topHeaderHeight}px`;
+      }
+    };
+    
+    // Устанавливаем отступ сразу
+    updatePadding();
+    
+    // Обновляем при изменении размера окна
+    window.addEventListener('resize', updatePadding);
+    
+    // Также обновляем после небольшой задержки, чтобы элементы успели отрендериться
+    const timeoutId = setTimeout(updatePadding, 100);
+    
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('resize', updatePadding);
+      clearTimeout(timeoutId);
+      document.body.style.paddingTop = '';
     };
   }, []);
-
-  const isSticky = () => {
-    const header = document.querySelector(".header-section");
-    if (!header) return; // Проверяем что элемент существует
-    
-    const scrollTop = window.scrollY;
-    scrollTop >= 250
-      ? header.classList.add("is-sticky")
-      : header.classList.remove("is-sticky");
-  };
 
   return (
     <>
       <TopHeader />
-      <header className="header-section d-none d-xl-block">
+      <header className="header-section d-none d-xl-block" style={{ position: 'fixed', top: '40px', left: 0, right: 0, zIndex: 1000, backgroundColor: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', width: '100%' }}>
         <div className="header-wrapper">
           <div className="header-bottom header-bottom-color--golden section-fluid sticky-header sticky-color--golden">
             <div className="container">
@@ -198,7 +226,7 @@ const Header = () => {
         </div>
       </header>
 
-      <div className="mobile-header sticky-header sticky-color--golden mobile-header-bg-color--golden section-fluid d-lg-block d-xl-none">
+      <div className="mobile-header sticky-header sticky-color--golden mobile-header-bg-color--golden section-fluid d-lg-block d-xl-none" style={{ position: 'fixed', top: '40px', left: 0, right: 0, zIndex: 1000, backgroundColor: '#fff', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', width: '100%' }}>
         <div className="container">
           <div className="row">
             <div className="col-12 d-flex align-items-center justify-content-between">
@@ -503,28 +531,6 @@ const Header = () => {
               <span>Call Us: 821078964521, 821078964521</span>
               <span>Email: bookheaven@example.com</span>
             </address>
-            <ul className="social-link">
-              <li>
-                <a href="#!">
-                  <i className="fa fa-facebook"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#!">
-                  <i className="fa fa-twitter"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#!">
-                  <i className="fa fa-instagram"></i>
-                </a>
-              </li>
-              <li>
-                <a href="#!">
-                  <i className="fa fa-linkedin"></i>
-                </a>
-              </li>
-            </ul>
             <ul className="user-link">
               {/* <li>
                 <Link to="/wishlist">Wishlist</Link>
@@ -551,43 +557,7 @@ const Header = () => {
         <div className="mobile-contact-info">
           <address className="address">
             <img src={logoWhite} alt="logo" />
-            <span>Address: 서울특별시 마포구 와우산로29라길 15</span>
-            <span>Call Us: 821078964521, 821078964521</span>
-            <span>Email: bookheaven@example.com</span>
           </address>
-          <ul className="social-link">
-            <li>
-              <a href="#!">
-                <i className="fa fa-facebook"></i>
-              </a>
-            </li>
-            <li>
-              <a href="#!">
-                <i className="fa fa-twitter"></i>
-              </a>
-            </li>
-            <li>
-              <a href="#!">
-                <i className="fa fa-instagram"></i>
-              </a>
-            </li>
-            <li>
-              <a href="#!">
-                <i className="fa fa-linkedin"></i>
-              </a>
-            </li>
-          </ul>
-          <ul className="user-link">
-            {/* <li>
-              <Link to="/wishlist">Wishlist</Link>
-            </li> */}
-            {/* <li>
-              <Link to="/cart">Cart</Link>
-            </li> */}
-            {/* <li>
-                <Link to="/checkout-one">Checkout</Link>
-              </li> */}
-          </ul>
         </div>
       </div>
 

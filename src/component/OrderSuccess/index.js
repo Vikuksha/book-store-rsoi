@@ -7,8 +7,6 @@ import img2 from '../../assets/img/email/order-success.png'
 import pro1 from '../../assets/img/email/pro-3.jpg'
 import pro2 from '../../assets/img/email/pro-5.jpg'
 import spoce from '../../assets/img/email/space.jpg'
-// Icon Import
-import facebook from '../../assets/img/email/facebook.png'
 import youtube from '../../assets/img/email/youtube.png'
 import twitter from '../../assets/img/email/twitter.png'
 import gplus from '../../assets/img/email/gplus.png'
@@ -494,9 +492,6 @@ const OrderSuccess = () => {
                     <tbody>
                       <tr>
                         <td>
-                          <a href="#!">
-                            <img src={facebook} alt="img" />
-                          </a>
                         </td>
                         <td>
                           <a href="#!">

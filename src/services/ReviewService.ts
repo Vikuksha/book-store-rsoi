@@ -11,7 +11,7 @@ class ReviewService {
 
   public async getReviews(input: ReviewInquiry): Promise<Review[]> {
     try {
-      let url = `${this.path}/review/all?page=${input.page}&limit=${input.limit}`;
+      let url = `${this.path}/api/review/all?page=${input.page}&limit=${input.limit}`;
       
       if (input.Id_Book) url += `&book_id=${input.Id_Book}`;
       if (input.id_User) url += `&user_id=${input.id_User}`;
@@ -30,7 +30,7 @@ class ReviewService {
 
   public async getReview(reviewId: number): Promise<Review> {
     try {
-      const url = `${this.path}/review/${reviewId}`;
+      const url = `${this.path}/api/review/${reviewId}`;
       const result = await axios.get(url);
       console.log("getReview:", result);
 
@@ -43,7 +43,7 @@ class ReviewService {
 
   public async createReview(input: ReviewInput): Promise<Review> {
     try {
-      const url = `${this.path}/review/create`;
+      const url = `${this.path}/api/review/create`;
       const result = await axios.post(url, input);
       console.log("createReview:", result);
 
@@ -56,7 +56,7 @@ class ReviewService {
 
   public async updateReview(input: ReviewUpdateInput): Promise<Review> {
     try {
-      const url = `${this.path}/review/update`;
+      const url = `${this.path}/api/review/update`;
       const result = await axios.put(url, input);
       console.log("updateReview:", result);
 
@@ -69,7 +69,7 @@ class ReviewService {
 
   public async deleteReview(reviewId: number): Promise<void> {
     try {
-      const url = `${this.path}/review/${reviewId}`;
+      const url = `${this.path}/api/review/${reviewId}`;
       const result = await axios.delete(url);
       console.log("deleteReview:", result);
     } catch (err) {
@@ -80,7 +80,7 @@ class ReviewService {
 
   public async getReviewsByBook(bookId: number): Promise<Review[]> {
     try {
-      const url = `${this.path}/review/book/${bookId}`;
+      const url = `${this.path}/api/review/book/${bookId}`;
       const result = await axios.get(url);
       console.log("getReviewsByBook:", result);
 
@@ -93,7 +93,7 @@ class ReviewService {
 
   public async getReviewsByUser(userId: number): Promise<Review[]> {
     try {
-      const url = `${this.path}/review/user/${userId}`;
+      const url = `${this.path}/api/review/user/${userId}`;
       const result = await axios.get(url);
       console.log("getReviewsByUser:", result);
 
@@ -104,13 +104,13 @@ class ReviewService {
     }
   }
 
-  public async getAverageRating(bookId: number): Promise<number> {
+  public async getAverageRating(bookId: number): Promise<{ averageRating: number; reviewCount: number }> {
     try {
-      const url = `${this.path}/review/book/${bookId}/average`;
+      const url = `${this.path}/api/review/book/${bookId}/average`;
       const result = await axios.get(url);
       console.log("getAverageRating:", result);
 
-      return result.data.averageRating;
+      return result.data;
     } catch (err) {
       console.log("Error, getAverageRating: ", err);
       throw err;

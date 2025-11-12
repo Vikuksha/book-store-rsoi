@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS "Book" (
     "Price" DECIMAL(10,2) NOT NULL,
     "Stock_quantity" INTEGER NOT NULL DEFAULT 0,
     "Publishing_year" INTEGER NOT NULL,
+    "Description" TEXT,
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -49,9 +50,10 @@ CREATE TABLE IF NOT EXISTS "Order" (
 -- Создание таблицы Reviews
 CREATE TABLE IF NOT EXISTS "Reviews" (
     "ID" BIGSERIAL PRIMARY KEY,
-    "Grade" INTEGER NOT NULL CHECK ("Grade" >= 1 AND "Grade" <= 5),
+    "Grade" FLOAT NOT NULL CHECK ("Grade" >= 1 AND "Grade" <= 5),
     "Id_Book" BIGINT NOT NULL,
     "id_User" BIGINT NOT NULL,
+    "Review" TEXT,
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("Id_Book") REFERENCES "Book"("ID") ON DELETE CASCADE,

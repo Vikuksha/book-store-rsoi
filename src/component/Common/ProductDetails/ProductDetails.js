@@ -11,8 +11,24 @@ const ProductDetailsOne = () => {
     let dispatch = useDispatch();
 
     let { id } = useParams();
-    dispatch({ type: "products/getProductById", payload: { id } });
     let product = useSelector((state) => state.products.single);
+    
+    const [count, setCount] = useState(1)
+    const [img, setImg] = useState('')
+    
+    // Загружаем продукт при изменении id
+    React.useEffect(() => {
+        dispatch({ type: "products/getProductById", payload: { id } });
+    }, [id, dispatch]);
+    
+    // Обновляем изображение при изменении продукта
+    React.useEffect(() => {
+        if (product && product.img) {
+            setImg(product.img);
+        } else {
+            setImg('');
+        }
+    }, [product]);
 
     // Add to cart
     const addToCart = async (id) => {
@@ -30,13 +46,13 @@ const ProductDetailsOne = () => {
     // }
 
     const colorSwatch = (i) => {
-        let data = product.color.find(item => item.color === i)
-        setImg(data.img)
+        if (product && product.color && product.color.length > 0) {
+            let data = product.color.find(item => item.color === i)
+            if (data && data.img) {
+                setImg(data.img)
+            }
+        }
     }
-
-    const [count, setCount] = useState(1)
-
-    const [img, setImg] = useState(product.img)
 
     const incNum = () => {
         setCount(count + 1)
@@ -50,26 +66,26 @@ const ProductDetailsOne = () => {
         }
     }
     return (
-        <>{product
+        <>{product && product.id
             ?
             <section id="product_single_one" className="ptb-100">
                 <div className="container">
                     <div className="row area_boxed">
                         <div className="col-lg-4">
                             <div className="product_single_one_img">
-                                <img src={img} alt="img" />
+                                {img ? <img src={img} alt={product.title || "Product"} /> : <div>Loading image...</div>}
                             </div>
                         </div>
                         <div className="col-lg-8">
                             <div className="product_details_right_one">
                                 <div className="modal_product_content_one">
-                                    <h3>{product.title}</h3>
+                                    <h3>{product.title || 'Untitled'}</h3>
                                     <div className="reviews_rating">
-                                        <RatingStar maxScore={5} rating={product.rating.rate} id="rating-star-common" />
-                                        {/* <span>({product.rating.count} Customer Reviews)</span> */}
+                                        <RatingStar maxScore={5} rating={product.rating?.rate || 0} id="rating-star-common" />
+                                        {/* <span>({product.rating?.count || 0} Customer Reviews)</span> */}
                                     </div>
-                                    <h4>${product.price}.00 <del>${parseInt(product.price) + 17}.00</del> </h4>
-                                    <p>{product.description}</p>
+                                    <h4>${typeof product.price === 'number' ? product.price.toFixed(2) : (product.price || '0.00')} {product.price && <del>${typeof product.price === 'number' ? (product.price + 17).toFixed(2) : (parseInt(product.price) + 17)}.00</del>}</h4>
+                                    <p>{product.description || 'No description available'}</p>
                                     <div className="customs_selects">
                                         {/* <select name="product" className="customs_sel_box">
                                             <option value="volvo">Size</option>
@@ -142,7 +158,6 @@ const ProductDetailsOne = () => {
                 <div className="row">
                     <div className="col-lg-6 offset-lg-3 col-md-6 offset-md-3 col-sm-12 col-12">
                         <div className="empaty_cart_area">
-                            <img src={img} alt="img" />
                             <h2>PRODUCT NOT FOUND</h2>
                             <h3>Sorry Mate... No Item Found according to Your query!</h3>
                             <Link to="/shop" className="btn btn-black-overlay btn_sm">Continue Shopping</Link>
@@ -151,8 +166,7 @@ const ProductDetailsOne = () => {
                 </div>
             </div>
         }
-
-            <RelatedProduct />
+        {product && product.id && <RelatedProduct />}
         </>
     )
 }

@@ -48,6 +48,9 @@ class DataAdapterService {
 
   // Convert new Book to old Product format
   private convertBookToProduct(book: Book): Product {
+    // Генерируем путь к изображению на основе ID книги
+    const bookImagePath = `/assets/img/book/${book.ID}.png`;
+    
     return {
       _id: book.ID.toString(),
       productStatus: 'PROCESS' as any,
@@ -57,12 +60,67 @@ class DataAdapterService {
       productLeftCount: book.Stock_quantity,
       productSize: 'MEDIUM' as any,
       productVolume: 1,
-      productDesc: `Author: ${book.Author}, Published: ${book.Publishing_year}`,
-      productImages: [], // Will need to be handled separately
+      productDesc: book.Description || `Author: ${book.Author}, Published: ${book.Publishing_year}`,
+      productImages: [bookImagePath], // Добавляем путь к изображению
       productViews: 0,
       createdAt: new Date(),
       updatedAt: new Date()
     };
+  }
+
+  // Convert Book to ProductCard format (for UI components)
+  public convertBookToProductCard(book: Book): any {
+    try {
+      // Импортируем функцию для загрузки изображений
+      const getBookImage = require('../utils/bookImageLoader').getBookImage;
+      
+      // Загружаем изображение книги
+      const bookImage = getBookImage(book.ID);
+      
+      // Используем Description из БД, если оно есть, иначе пустую строку
+      const fullDescription = book.Description || '';
+      
+      const productCard = {
+        id: book.ID,
+        labels: "New",
+        category: "book",
+        img: bookImage,
+        hover_img: bookImage, // Используем то же изображение для hover
+        title: book.Title,
+        price: book.Price,
+        stock_quantity: book.Stock_quantity, // Сохраняем количество на складе
+        description: `Author: ${book.Author}, Published: ${book.Publishing_year}`, // Краткое описание для карточки
+        fullDescription: fullDescription, // Полное описание из БД (пустая строка, если его нет)
+        rating: {
+          rate: 4.5,
+          count: 0
+        },
+        color: []
+      };
+      
+      console.log(`📝 Book ${book.ID} - Description from DB:`, book.Description ? `Yes (${book.Description.length} chars)` : 'No (empty string)');
+      
+      console.log(`✅ Converted book ${book.ID} to product card:`, productCard);
+      return productCard;
+    } catch (error) {
+      console.error(`❌ Error converting book ${book.ID}:`, error);
+      // Возвращаем базовую структуру даже при ошибке
+      return {
+        id: book.ID,
+        labels: "New",
+        category: "book",
+        img: '',
+        hover_img: '',
+        title: book.Title,
+        price: book.Price,
+        description: `Author: ${book.Author}, Published: ${book.Publishing_year}`,
+        rating: {
+          rate: 4.5,
+          count: 0
+        },
+        color: []
+      };
+    }
   }
 
   // Convert old Product to new Book format

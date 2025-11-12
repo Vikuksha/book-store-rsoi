@@ -39,7 +39,7 @@ const TopHeader = () => {
     }
     return (
       <>
-        <section id="top_header">
+        <section id="top_header" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1001, backgroundColor: '#ebebeb', borderBottom: '1px solid #e9ecef', width: '100%' }}>
           <div className="container">
             <div className="row">
               <div className="col-lg-6 col-md-6 col-sm-12 col-12">

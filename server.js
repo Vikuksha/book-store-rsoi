@@ -231,7 +231,7 @@ app.get('/api/user/all', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/api/user/:id', authenticateToken, async (req, res) => {
+app.get('/api/user/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -361,6 +361,529 @@ app.get('/api/database/status', async (req, res) => {
       status: 'Error', 
       error: error.message 
     });
+  }
+});
+
+// Book Routes
+app.get('/api/book/all', async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search, author, publishing_year, min_price, max_price, in_stock, sort_by } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let query = 'SELECT * FROM "Book" WHERE 1=1';
+    const params = [];
+    let paramCount = 1;
+    
+    if (search) {
+      query += ` AND ("Title" ILIKE $${paramCount} OR "Author" ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+      paramCount++;
+    }
+    
+    if (author) {
+      query += ` AND "Author" ILIKE $${paramCount}`;
+      params.push(`%${author}%`);
+      paramCount++;
+    }
+    
+    if (publishing_year) {
+      query += ` AND "Publishing_year" = $${paramCount}`;
+      params.push(publishing_year);
+      paramCount++;
+    }
+    
+    if (min_price) {
+      query += ` AND "Price" >= $${paramCount}`;
+      params.push(min_price);
+      paramCount++;
+    }
+    
+    if (max_price) {
+      query += ` AND "Price" <= $${paramCount}`;
+      params.push(max_price);
+      paramCount++;
+    }
+    
+    // Фильтрация по наличию на складе
+    if (in_stock === 'true' || in_stock === true) {
+      query += ` AND "Stock_quantity" > 0`;
+    }
+    
+    // Сортировка
+    let orderBy = 'ORDER BY "created_at" DESC'; // По умолчанию по дате создания
+    if (sort_by) {
+      switch (sort_by) {
+        case 'price_asc':
+          orderBy = 'ORDER BY "Price" ASC';
+          break;
+        case 'price_desc':
+          orderBy = 'ORDER BY "Price" DESC';
+          break;
+        case 'newest':
+          orderBy = 'ORDER BY "created_at" DESC';
+          break;
+        case 'oldest':
+          orderBy = 'ORDER BY "created_at" ASC';
+          break;
+        case 'publishing_year_desc':
+          orderBy = 'ORDER BY "Publishing_year" DESC';
+          break;
+        case 'publishing_year_asc':
+          orderBy = 'ORDER BY "Publishing_year" ASC';
+          break;
+        case 'title_asc':
+          orderBy = 'ORDER BY "Title" ASC';
+          break;
+        case 'title_desc':
+          orderBy = 'ORDER BY "Title" DESC';
+          break;
+        default:
+          orderBy = 'ORDER BY "created_at" DESC';
+      }
+    }
+    
+    query += ` ${orderBy} LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    
+    res.json(result.rows);
+    
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/book/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query('SELECT * FROM "Book" WHERE "ID" = $1', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    
+    res.json(result.rows[0]);
+    
+  } catch (error) {
+    console.error('Error fetching book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Review Routes
+app.get('/api/review/all', async (req, res) => {
+  try {
+    const { page = 1, limit = 100, book_id, user_id, min_grade, max_grade } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let query = 'SELECT * FROM "Reviews" WHERE 1=1';
+    const params = [];
+    let paramCount = 1;
+    
+    if (book_id) {
+      query += ` AND "Id_Book" = $${paramCount}`;
+      params.push(book_id);
+      paramCount++;
+    }
+    
+    if (user_id) {
+      query += ` AND "id_User" = $${paramCount}`;
+      params.push(user_id);
+      paramCount++;
+    }
+    
+    if (min_grade) {
+      query += ` AND "Grade" >= $${paramCount}`;
+      params.push(min_grade);
+      paramCount++;
+    }
+    
+    if (max_grade) {
+      query += ` AND "Grade" <= $${paramCount}`;
+      params.push(max_grade);
+      paramCount++;
+    }
+    
+    query += ` ORDER BY "created_at" DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+    
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/review/book/:bookId', async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    
+    const result = await pool.query(
+      'SELECT * FROM "Reviews" WHERE "Id_Book" = $1 ORDER BY "created_at" DESC',
+      [bookId]
+    );
+    
+    res.json(result.rows);
+    
+  } catch (error) {
+    console.error('Error fetching reviews by book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/review/book/:bookId/average', async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    
+    const result = await pool.query(
+      'SELECT COALESCE(AVG("Grade"), 0) as "averageRating", COUNT(*) as "reviewCount" FROM "Reviews" WHERE "Id_Book" = $1',
+      [bookId]
+    );
+    
+    res.json({
+      averageRating: parseFloat(result.rows[0].averageRating) || 0,
+      reviewCount: parseInt(result.rows[0].reviewCount) || 0
+    });
+    
+  } catch (error) {
+    console.error('Error fetching average rating:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Create review
+app.post('/api/review/create', async (req, res) => {
+  try {
+    const { Grade, Id_Book, id_User, Review } = req.body;
+    
+    // Валидация
+    if (!Grade || Grade < 1 || Grade > 5) {
+      return res.status(400).json({ error: 'Grade must be between 1 and 5' });
+    }
+    if (!Id_Book || !id_User) {
+      return res.status(400).json({ error: 'Id_Book and id_User are required' });
+    }
+    
+    // Проверяем, существует ли уже отзыв от этого пользователя для этой книги
+    const existingReview = await pool.query(
+      'SELECT "ID" FROM "Reviews" WHERE "Id_Book" = $1 AND "id_User" = $2',
+      [Id_Book, id_User]
+    );
+    
+    if (existingReview.rows.length > 0) {
+      // Обновляем существующий отзыв
+      const result = await pool.query(
+        'UPDATE "Reviews" SET "Grade" = $1, "Review" = $2, "updated_at" = CURRENT_TIMESTAMP WHERE "Id_Book" = $3 AND "id_User" = $4 RETURNING *',
+        [Grade, Review || null, Id_Book, id_User]
+      );
+      return res.json(result.rows[0]);
+    }
+    
+    // Создаём новый отзыв
+    const result = await pool.query(
+      'INSERT INTO "Reviews" ("Grade", "Id_Book", "id_User", "Review") VALUES ($1, $2, $3, $4) RETURNING *',
+      [Grade, Id_Book, id_User, Review || null]
+    );
+    
+    res.status(201).json(result.rows[0]);
+    
+  } catch (error) {
+    console.error('Error creating review:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update review
+app.put('/api/review/update', async (req, res) => {
+  try {
+    const { ID, Grade, Review } = req.body;
+    
+    if (!ID) {
+      return res.status(400).json({ error: 'Review ID is required' });
+    }
+    
+    let query = 'UPDATE "Reviews" SET "updated_at" = CURRENT_TIMESTAMP';
+    const params = [];
+    let paramCount = 1;
+    
+    if (Grade !== undefined) {
+      if (Grade < 1 || Grade > 5) {
+        return res.status(400).json({ error: 'Grade must be between 1 and 5' });
+      }
+      query += `, "Grade" = $${paramCount}`;
+      params.push(Grade);
+      paramCount++;
+    }
+    
+    if (Review !== undefined) {
+      query += `, "Review" = $${paramCount}`;
+      params.push(Review);
+      paramCount++;
+    }
+    
+    query += ` WHERE "ID" = $${paramCount} RETURNING *`;
+    params.push(ID);
+    
+    const result = await pool.query(query, params);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Review not found' });
+    }
+    
+    res.json(result.rows[0]);
+    
+  } catch (error) {
+    console.error('Error updating review:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete review
+app.delete('/api/review/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query('DELETE FROM "Reviews" WHERE "ID" = $1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Review not found' });
+    }
+    
+    res.json({ message: 'Review deleted successfully' });
+    
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Алгоритм расчёта скидки
+function calculateDiscount(subtotal, orderQuantity) {
+  let discount = 0;
+  let discountPercent = 0;
+  
+  // Скидка 5% при заказе от 50$
+  if (subtotal >= 50) {
+    discountPercent = 5;
+  }
+  
+  // Скидка 10% при заказе от 100$
+  if (subtotal >= 100) {
+    discountPercent = 10;
+  }
+  
+  // Скидка 15% при заказе от 200$
+  if (subtotal >= 200) {
+    discountPercent = 15;
+  }
+  
+  // Дополнительная скидка 2% при заказе 5+ книг
+  if (orderQuantity >= 5) {
+    discountPercent += 2;
+  }
+  
+  // Максимальная скидка 20%
+  if (discountPercent > 20) {
+    discountPercent = 20;
+  }
+  
+  discount = (subtotal * discountPercent) / 100;
+  
+  return {
+    discount,
+    discountPercent,
+    finalTotal: subtotal - discount
+  };
+}
+
+// Order Routes - Create complete order with stock check
+app.post('/api/order/create-complete', async (req, res) => {
+  try {
+    const { order, compositions } = req.body;
+    
+    if (!order || !compositions || !Array.isArray(compositions) || compositions.length === 0) {
+      return res.status(400).json({ error: 'Order and compositions are required' });
+    }
+    
+    // Проверка наличия книг на складе перед созданием заказа
+    const stockErrors = [];
+    const bookDetails = [];
+    
+    for (const composition of compositions) {
+      const { ID_Book, Books_number } = composition;
+      
+      if (!ID_Book || !Books_number || Books_number <= 0) {
+        return res.status(400).json({ error: 'Invalid composition data' });
+      }
+      
+      // Получаем информацию о книге
+      const bookResult = await pool.query('SELECT * FROM "Book" WHERE "ID" = $1', [ID_Book]);
+      
+      if (bookResult.rows.length === 0) {
+        return res.status(404).json({ error: `Book with ID ${ID_Book} not found` });
+      }
+      
+      const book = bookResult.rows[0];
+      
+      // Проверяем наличие на складе
+      if (book.Stock_quantity < Books_number) {
+        stockErrors.push({
+          bookId: ID_Book,
+          bookTitle: book.Title,
+          requested: Books_number,
+          available: book.Stock_quantity
+        });
+      }
+      
+      bookDetails.push({
+        book,
+        quantity: Books_number
+      });
+    }
+    
+    // Если есть ошибки с наличием, возвращаем их
+    if (stockErrors.length > 0) {
+      return res.status(400).json({
+        error: 'Insufficient stock',
+        details: stockErrors
+      });
+    }
+    
+    // Начинаем транзакцию
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      // Создаём заказ
+      const orderResult = await client.query(
+        `INSERT INTO "Order" ("Total_order_quantity", "Currency", "Order_status", "ID_User")
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [order.Total_order_quantity || compositions.reduce((sum, c) => sum + c.Books_number, 0),
+         order.Currency || 1,
+         order.Order_status || 'PENDING',
+         order.ID_User]
+      );
+      
+      const createdOrder = orderResult.rows[0];
+      const orderId = createdOrder.ID;
+      
+      // Рассчитываем скидку
+      const subtotal = bookDetails.reduce((sum, item) => {
+        return sum + (parseFloat(item.book.Price) * item.quantity);
+      }, 0);
+      
+      const discountInfo = calculateDiscount(subtotal, order.Total_order_quantity || compositions.reduce((sum, c) => sum + c.Books_number, 0));
+      
+      // Создаём состав заказа и обновляем количество на складе
+      const orderCompositions = [];
+      
+      for (const composition of compositions) {
+        const { ID_Book, Books_number } = composition;
+        
+        // Создаём запись в Order_composition
+        const compResult = await client.query(
+          `INSERT INTO "Order_composition" ("Books_number", "ID_Order", "ID_Book")
+           VALUES ($1, $2, $3) RETURNING *`,
+          [Books_number, orderId, ID_Book]
+        );
+        
+        orderCompositions.push(compResult.rows[0]);
+        
+        // Уменьшаем количество на складе
+        await client.query(
+          `UPDATE "Book" SET "Stock_quantity" = "Stock_quantity" - $1, "updated_at" = CURRENT_TIMESTAMP WHERE "ID" = $2`,
+          [Books_number, ID_Book]
+        );
+      }
+      
+      await client.query('COMMIT');
+      
+      // Возвращаем полную информацию о заказе
+      res.status(201).json({
+        order: createdOrder,
+        compositions: orderCompositions,
+        pricing: {
+          subtotal: subtotal.toFixed(2),
+          discount: discountInfo.discount.toFixed(2),
+          discountPercent: discountInfo.discountPercent,
+          total: discountInfo.finalTotal.toFixed(2)
+        }
+      });
+      
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+    
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// Check stock availability before order
+app.post('/api/order/check-stock', async (req, res) => {
+  try {
+    const { compositions } = req.body;
+    
+    if (!compositions || !Array.isArray(compositions) || compositions.length === 0) {
+      return res.status(400).json({ error: 'Compositions array is required' });
+    }
+    
+    const stockCheck = [];
+    let allAvailable = true;
+    
+    for (const composition of compositions) {
+      const { ID_Book, Books_number } = composition;
+      
+      if (!ID_Book || !Books_number) {
+        continue;
+      }
+      
+      const bookResult = await pool.query('SELECT "ID", "Title", "Stock_quantity" FROM "Book" WHERE "ID" = $1', [ID_Book]);
+      
+      if (bookResult.rows.length === 0) {
+        stockCheck.push({
+          bookId: ID_Book,
+          available: false,
+          error: 'Book not found'
+        });
+        allAvailable = false;
+        continue;
+      }
+      
+      const book = bookResult.rows[0];
+      const available = book.Stock_quantity >= Books_number;
+      
+      if (!available) {
+        allAvailable = false;
+      }
+      
+      stockCheck.push({
+        bookId: ID_Book,
+        bookTitle: book.Title,
+        requested: Books_number,
+        available: book.Stock_quantity,
+        sufficient: available
+      });
+    }
+    
+    res.json({
+      allAvailable,
+      stockCheck
+    });
+    
+  } catch (error) {
+    console.error('Error checking stock:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

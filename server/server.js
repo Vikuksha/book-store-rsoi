@@ -302,6 +302,153 @@ app.delete('/api/user/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Book Routes
+app.get('/api/book/all', async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search, author, publishing_year, min_price, max_price } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let query = 'SELECT * FROM "Book" WHERE 1=1';
+    const params = [];
+    let paramCount = 1;
+    
+    if (search) {
+      query += ` AND ("Title" ILIKE $${paramCount} OR "Author" ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+      paramCount++;
+    }
+    
+    if (author) {
+      query += ` AND "Author" ILIKE $${paramCount}`;
+      params.push(`%${author}%`);
+      paramCount++;
+    }
+    
+    if (publishing_year) {
+      query += ` AND "Publishing_year" = $${paramCount}`;
+      params.push(publishing_year);
+      paramCount++;
+    }
+    
+    if (min_price) {
+      query += ` AND "Price" >= $${paramCount}`;
+      params.push(min_price);
+      paramCount++;
+    }
+    
+    if (max_price) {
+      query += ` AND "Price" <= $${paramCount}`;
+      params.push(max_price);
+      paramCount++;
+    }
+    
+    query += ` ORDER BY "created_at" DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    const countResult = await pool.query('SELECT COUNT(*) FROM "Book"');
+    const total = parseInt(countResult.rows[0].count);
+    
+    res.json(result.rows);
+    
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/book/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query('SELECT * FROM "Book" WHERE "ID" = $1', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    
+    res.json(result.rows[0]);
+    
+  } catch (error) {
+    console.error('Error fetching book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/book/create', authenticateToken, async (req, res) => {
+  try {
+    const { Title, Author, Price, Stock_quantity, Publishing_year } = req.body;
+    
+    if (!Title || !Author || !Price || Stock_quantity === undefined || !Publishing_year) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    
+    const result = await pool.query(
+      `INSERT INTO "Book" ("Title", "Author", "Price", "Stock_quantity", "Publishing_year") 
+       VALUES ($1, $2, $3, $4, $5) 
+       RETURNING *`,
+      [Title, Author, Price, Stock_quantity, Publishing_year]
+    );
+    
+    res.status(201).json(result.rows[0]);
+    
+  } catch (error) {
+    console.error('Error creating book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/book/update', authenticateToken, async (req, res) => {
+  try {
+    const { ID, Title, Author, Price, Stock_quantity, Publishing_year } = req.body;
+    
+    if (!ID) {
+      return res.status(400).json({ error: 'Book ID is required' });
+    }
+    
+    const result = await pool.query(
+      `UPDATE "Book" 
+       SET "Title" = COALESCE($1, "Title"),
+           "Author" = COALESCE($2, "Author"),
+           "Price" = COALESCE($3, "Price"),
+           "Stock_quantity" = COALESCE($4, "Stock_quantity"),
+           "Publishing_year" = COALESCE($5, "Publishing_year"),
+           "updated_at" = CURRENT_TIMESTAMP
+       WHERE "ID" = $6
+       RETURNING *`,
+      [Title, Author, Price, Stock_quantity, Publishing_year, ID]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    
+    res.json(result.rows[0]);
+    
+  } catch (error) {
+    console.error('Error updating book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/book/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query('DELETE FROM "Book" WHERE "ID" = $1 RETURNING *', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    
+    res.json({ message: 'Book deleted successfully' });
+    
+  } catch (error) {
+    console.error('Error deleting book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 

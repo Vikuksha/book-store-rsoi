@@ -4,6 +4,7 @@ import { AiOutlineExpand } from 'react-icons/ai';
 import { FaExchangeAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useDispatch } from "react-redux";
+import { RatingStar } from "rating-star";
 import MyVerticallyCenteredModal from '../../Common/Modal';
 
 const ProductCard = (props) => {
@@ -45,8 +46,20 @@ const ProductCard = (props) => {
                         <Link to={`/product-details-one/${props.data.id}`}>{props.data.title}</Link>
                     </h5>
                     <span className="price">
-                        <span className="new">${props.data.price}.00</span>
+                        <span className="new">${typeof props.data.price === 'number' ? props.data.price.toFixed(2) : props.data.price}</span>
                     </span>
+                    {props.data.rating && (
+                        <div className="rating_wrap" style={{ marginTop: '10px' }}>
+                            <div className="rating">
+                                <RatingStar maxScore={5} rating={props.data.rating.rate || 0} id={`rating-star-${props.data.id}`} />
+                            </div>
+                            {props.data.rating.count > 0 && (
+                                <span className="rating_num" style={{ marginLeft: '5px', fontSize: '12px', color: '#666' }}>
+                                    ({props.data.rating.count})
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 

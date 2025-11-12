@@ -11,14 +11,14 @@ class UserService {
 
   public async getUsers(input: UserInquiry): Promise<User[]> {
     try {
-      let url = `${this.path}/user/all?page=${input.page}&limit=${input.limit}`;
+      let url = `${this.path}/api/user/all?page=${input.page}&limit=${input.limit}`;
       
       if (input.search) url += `&search=${input.search}`;
 
       const result = await axios.get(url);
       console.log("getUsers:", result);
 
-      return result.data;
+      return result.data.users || result.data;
     } catch (err) {
       console.log("Error, getUsers: ", err);
       throw err;
@@ -27,11 +27,11 @@ class UserService {
 
   public async getUser(userId: number): Promise<User> {
     try {
-      const url = `${this.path}/user/${userId}`;
+      const url = `${this.path}/api/user/${userId}`;
       const result = await axios.get(url);
       console.log("getUser:", result);
 
-      return result.data;
+      return result.data.user || result.data;
     } catch (err) {
       console.log("Error, getUser: ", err);
       throw err;
@@ -40,11 +40,11 @@ class UserService {
 
   public async createUser(input: UserInput): Promise<User> {
     try {
-      const url = `${this.path}/user/create`;
+      const url = `${this.path}/api/user/create`;
       const result = await axios.post(url, input);
       console.log("createUser:", result);
 
-      return result.data;
+      return result.data.user || result.data;
     } catch (err) {
       console.log("Error, createUser: ", err);
       throw err;
@@ -53,11 +53,11 @@ class UserService {
 
   public async updateUser(input: UserUpdateInput): Promise<User> {
     try {
-      const url = `${this.path}/user/update`;
+      const url = `${this.path}/api/user/update`;
       const result = await axios.put(url, input);
       console.log("updateUser:", result);
 
-      return result.data;
+      return result.data.user || result.data;
     } catch (err) {
       console.log("Error, updateUser: ", err);
       throw err;
@@ -66,7 +66,7 @@ class UserService {
 
   public async deleteUser(userId: number): Promise<void> {
     try {
-      const url = `${this.path}/user/${userId}`;
+      const url = `${this.path}/api/user/${userId}`;
       const result = await axios.delete(url);
       console.log("deleteUser:", result);
     } catch (err) {
@@ -77,7 +77,7 @@ class UserService {
 
   public async login(input: LoginInput): Promise<User> {
     try {
-      const url = `${this.path}/user/login`;
+      const url = `${this.path}/api/user/login`;
       const result = await axios.post(url, input, { withCredentials: true });
       console.log("login:", result);
 
@@ -93,7 +93,7 @@ class UserService {
 
   public async logout(): Promise<void> {
     try {
-      const url = `${this.path}/user/logout`;
+      const url = `${this.path}/api/user/logout`;
       const result = await axios.post(url, {}, { withCredentials: true });
       console.log("logout:", result);
 
@@ -106,11 +106,11 @@ class UserService {
 
   public async getUserByEmail(email: string): Promise<User> {
     try {
-      const url = `${this.path}/user/email/${encodeURIComponent(email)}`;
+      const url = `${this.path}/api/user/email/${encodeURIComponent(email)}`;
       const result = await axios.get(url);
       console.log("getUserByEmail:", result);
 
-      return result.data;
+      return result.data.user || result.data;
     } catch (err) {
       console.log("Error, getUserByEmail: ", err);
       throw err;

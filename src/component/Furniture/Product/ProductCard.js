@@ -38,8 +38,8 @@ const ProductCard = (props) => {
                 <div className="product_info">
                     <h5 className="product_title"><Link to={`/product-details-one/${props.data.id}`}>{props.data.title}</Link></h5>
                     <div className="product_price">
-                        <span className="price">${props.data.price}.00</span>
-                        <del>${parseInt(props.data.price) + 17}.00</del>
+                        <span className="price">${typeof props.data.price === 'number' ? props.data.price.toFixed(2) : props.data.price}</span>
+                        <del>${typeof props.data.price === 'number' ? (props.data.price + 17).toFixed(2) : (parseInt(props.data.price) + 17)}</del>
                     </div>
                     <div className="rating_wrap">
                         <div className="rating">

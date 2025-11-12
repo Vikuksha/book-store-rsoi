@@ -22,6 +22,7 @@ const DatabaseConnectionTest = () => {
 
       // Тест подключения к книгам
       try {
+        console.error('подключение к книгам:');
         await serviceManager.bookService.getBooks({ page: 1, limit: 1 });
         results.books = { status: 'success', message: 'Подключение к таблице Book успешно' };
       } catch (error) {
