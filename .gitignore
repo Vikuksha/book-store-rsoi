@@ -4,3 +4,4 @@ database/dump_*.sql
 database/dump_latest.sql
 .env
 .env.*
+.DS_Store
