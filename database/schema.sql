@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "Order" (
     "ID" BIGSERIAL PRIMARY KEY,
     "Total_order_quantity" INTEGER NOT NULL,
     "Order_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "Currency" INTEGER NOT NULL DEFAULT 1,
+    "Currency" DECIMAL(10,2) NOT NULL DEFAULT 0,
     "Order_status" VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     "Tracking_number" VARCHAR(255),
     "ID_User" BIGINT NOT NULL,
@@ -46,6 +46,22 @@ CREATE TABLE IF NOT EXISTS "Order" (
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("ID_User") REFERENCES "Users"("ID") ON DELETE CASCADE
 );
+
+-- Автоматическое обновление типа данных Currency для существующей таблицы Order
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'Order'
+        AND column_name = 'Currency'
+        AND data_type != 'numeric'
+    ) THEN
+        ALTER TABLE "Order"
+        ALTER COLUMN "Currency" TYPE DECIMAL(10,2) USING "Currency"::DECIMAL(10,2);
+    END IF;
+END $$;
 
 -- Создание таблицы Reviews
 CREATE TABLE IF NOT EXISTS "Reviews" (

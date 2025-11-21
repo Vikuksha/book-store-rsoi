@@ -854,25 +854,70 @@ app.post('/api/order/create-complete', async (req, res) => {
     try {
       await client.query('BEGIN');
       
-      // Создаём заказ со статусом "COLLECTING" (собирается)
-      const orderResult = await client.query(
-        `INSERT INTO "Order" ("Total_order_quantity", "Currency", "Order_status", "ID_User")
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-        [order.Total_order_quantity || compositions.reduce((sum, c) => sum + c.Books_number, 0),
-         order.Currency || 1,
-         order.Order_status || 'COLLECTING', // Начинаем с состояния "собирается"
-         order.ID_User]
-      );
-      
-      const createdOrder = orderResult.rows[0];
-      const orderId = createdOrder.ID;
-      
-      // Рассчитываем скидку
+      // Рассчитываем скидку перед созданием заказа
       const subtotal = bookDetails.reduce((sum, item) => {
         return sum + (parseFloat(item.book.Price) * item.quantity);
       }, 0);
       
       const discountInfo = calculateDiscount(subtotal, order.Total_order_quantity || compositions.reduce((sum, c) => sum + c.Books_number, 0));
+      
+      // Общая сумма корзины с учетом всех скидок
+      // Если Currency передан из фронтенда, используем его, иначе рассчитываем
+      const totalAmount = order.Currency && order.Currency > 0 
+        ? parseFloat(order.Currency) 
+        : discountInfo.finalTotal;
+      
+      // Генерируем четырехзначный Tracking_number (от 1000 до 9999)
+      let trackingNumber = Math.floor(1000 + Math.random() * 9000).toString();
+      
+      // Убеждаемся, что Tracking_number - строка из 4 цифр
+      if (!trackingNumber || trackingNumber.length !== 4) {
+        trackingNumber = Math.floor(1000 + Math.random() * 9000).toString();
+      }
+      
+      console.log('📦 Generated Tracking_number:', trackingNumber, 'Type:', typeof trackingNumber);
+      
+      // Подготавливаем данные для вставки
+      const totalOrderQuantity = order.Total_order_quantity || compositions.reduce((sum, c) => sum + c.Books_number, 0);
+      const orderStatus = order.Order_status || 'COLLECTING';
+      
+      console.log('📦 Order data before insert:', {
+        Total_order_quantity: totalOrderQuantity,
+        Currency: totalAmount,
+        Order_status: orderStatus,
+        Tracking_number: trackingNumber,
+        Tracking_number_type: typeof trackingNumber,
+        ID_User: order.ID_User
+      });
+      
+      // Создаём заказ со статусом "COLLECTING" (собирается)
+      // Currency содержит общую сумму корзины
+      // Tracking_number - четырехзначное число
+      const insertQuery = `INSERT INTO "Order" ("Total_order_quantity", "Currency", "Order_status", "Tracking_number", "ID_User")
+         VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+      
+      const insertParams = [
+        totalOrderQuantity,
+        totalAmount, // Общая сумма корзины с учетом всех скидок
+        orderStatus, // Начинаем с состояния "собирается"
+        trackingNumber, // Четырехзначный номер отслеживания
+        order.ID_User
+      ];
+      
+      console.log('📦 SQL Query:', insertQuery);
+      console.log('📦 SQL Params:', insertParams);
+      
+      const orderResult = await client.query(insertQuery, insertParams);
+      
+      const createdOrder = orderResult.rows[0];
+      const orderId = createdOrder.ID;
+      
+      console.log('✅ Order created:', {
+        ID: createdOrder.ID,
+        Tracking_number: createdOrder.Tracking_number,
+        Order_status: createdOrder.Order_status,
+        Currency: createdOrder.Currency
+      });
       
       // Создаём состав заказа и обновляем количество на складе
       const orderCompositions = [];

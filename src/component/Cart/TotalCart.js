@@ -154,11 +154,14 @@ const TotalCart = (props) => {
       // Создаем заказ
       const orderQuantity = carts.reduce((sum, item) => sum + (item.quantity || 1), 0);
       const subtotal = cartTotal();
+      const orderQuantityForDiscount = orderQuantity;
+      const discount = calculateDiscount(subtotal, orderQuantityForDiscount);
+      const totalAmount = discountInfo?.finalTotal ?? discount.finalTotal ?? subtotal;
       
       const orderData = {
         order: {
           Total_order_quantity: orderQuantity,
-          Currency: 1,
+          Currency: totalAmount, // Общая сумма корзины с учетом всех скидок
           Order_status: 'COLLECTING', // Начинаем с состояния "собирается"
           ID_User: user.ID
         },
