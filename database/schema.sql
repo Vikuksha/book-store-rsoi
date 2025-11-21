@@ -73,6 +73,20 @@ CREATE TABLE IF NOT EXISTS "Order_composition" (
     FOREIGN KEY ("ID_Book") REFERENCES "Book"("ID") ON DELETE CASCADE
 );
 
+-- Создание таблицы Basket
+CREATE TABLE IF NOT EXISTS "Basket" (
+    "ID" BIGSERIAL PRIMARY KEY,
+    "Books_number" INTEGER NOT NULL DEFAULT 1,
+    "Payment" DECIMAL(10,2) NOT NULL DEFAULT 0,
+    "Discount_payment" DECIMAL(10,2) NOT NULL DEFAULT 0,
+    "ID_User" BIGINT NOT NULL,
+    "ID_Book" BIGINT NOT NULL,
+    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("ID_User") REFERENCES "Users"("ID") ON DELETE CASCADE,
+    FOREIGN KEY ("ID_Book") REFERENCES "Book"("ID") ON DELETE CASCADE
+);
+
 -- Создание индексов для оптимизации
 CREATE INDEX IF NOT EXISTS idx_users_email ON "Users"("Email");
 CREATE INDEX IF NOT EXISTS idx_users_phone ON "Users"("Phone");
@@ -84,6 +98,8 @@ CREATE INDEX IF NOT EXISTS idx_reviews_book ON "Reviews"("Id_Book");
 CREATE INDEX IF NOT EXISTS idx_reviews_user ON "Reviews"("id_User");
 CREATE INDEX IF NOT EXISTS idx_order_composition_order ON "Order_composition"("ID_Order");
 CREATE INDEX IF NOT EXISTS idx_order_composition_book ON "Order_composition"("ID_Book");
+CREATE INDEX IF NOT EXISTS idx_basket_user ON "Basket"("ID_User");
+CREATE INDEX IF NOT EXISTS idx_basket_book ON "Basket"("ID_Book");
 
 -- Функция для автоматического обновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -100,6 +116,7 @@ CREATE TRIGGER update_book_updated_at BEFORE UPDATE ON "Book" FOR EACH ROW EXECU
 CREATE TRIGGER update_order_updated_at BEFORE UPDATE ON "Order" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON "Reviews" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_order_composition_updated_at BEFORE UPDATE ON "Order_composition" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_basket_updated_at BEFORE UPDATE ON "Basket" FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Вставка тестовых данных
 INSERT INTO "Users" ("Email", "Password", "First_name", "Last_name", "Phone", "Address") VALUES

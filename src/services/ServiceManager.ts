@@ -3,6 +3,7 @@ import BookService from '../services/BookService';
 import UserService from '../services/UserService';
 import ReviewService from '../services/ReviewService';
 import OrderServiceNew from '../services/OrderServiceNew';
+import BasketService from '../services/BasketService';
 
 class ServiceManager {
   private static instance: ServiceManager;
@@ -11,12 +12,14 @@ class ServiceManager {
   public readonly userService: UserService;
   public readonly reviewService: ReviewService;
   public readonly orderService: OrderServiceNew;
+  public readonly basketService: BasketService;
 
   private constructor() {
     this.bookService = new BookService();
     this.userService = new UserService();
     this.reviewService = new ReviewService();
     this.orderService = new OrderServiceNew();
+    this.basketService = new BasketService();
   }
 
   public static getInstance(): ServiceManager {

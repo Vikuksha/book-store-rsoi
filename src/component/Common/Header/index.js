@@ -18,6 +18,7 @@ const Header = () => {
   const history = useHistory();
   let carts = useSelector((state) => state.products.carts);
   let favorites = useSelector((state) => state.products.favorites);
+  let userStatus = useSelector((state) => state.user.status); // Статус авторизации пользователя
   let dispatch = useDispatch();
 
   const rmCartProduct = (id) => {
@@ -191,23 +192,26 @@ const Header = () => {
                         </a>
                       )}
                     </li> */}
-                    <li>
-                      {carts.length ? (
-                        <a
-                          href="#!"
-                          className="offcanvas-toggle"
-                          onClick={handleClick}
-                        >
-                          <i className="fa fa-shopping-bag"></i>
-                          <span className="item-count">{carts.length}</span>
-                        </a>
-                      ) : (
-                        <a href="#!" className="offcanvas-toggle">
-                          <i className="fa fa-shopping-bag"></i>
-                          <span className="item-count">{carts.length}</span>
-                        </a>
-                      )}
-                    </li>
+                    {/* Показываем кнопку корзины только для авторизованных пользователей */}
+                    {userStatus && (
+                      <li>
+                        {carts.length ? (
+                          <a
+                            href="#!"
+                            className="offcanvas-toggle"
+                            onClick={handleClick}
+                          >
+                            <i className="fa fa-shopping-bag"></i>
+                            <span className="item-count">{carts.length}</span>
+                          </a>
+                        ) : (
+                          <a href="#!" className="offcanvas-toggle">
+                            <i className="fa fa-shopping-bag"></i>
+                            <span className="item-count">{carts.length}</span>
+                          </a>
+                        )}
+                      </li>
+                    )}
                     {/* <li>
                       <a
                         href="#search"
@@ -273,23 +277,26 @@ const Header = () => {
                       </a>
                     )}
                   </li> */}
-                  <li>
-                    {carts.length ? (
-                      <a
-                        href="#!"
-                        className="offcanvas-toggle"
-                        onClick={handleClick}
-                      >
-                        <i className="fa fa-shopping-bag"></i>
-                        <span className="item-count">{carts.length}</span>
-                      </a>
-                    ) : (
-                      <a href="#!" className="offcanvas-toggle">
-                        <i className="fa fa-shopping-bag"></i>
-                        <span className="item-count">{carts.length}</span>
-                      </a>
-                    )}
-                  </li>
+                  {/* Показываем кнопку корзины только для авторизованных пользователей */}
+                  {userStatus && (
+                    <li>
+                      {carts.length ? (
+                        <a
+                          href="#!"
+                          className="offcanvas-toggle"
+                          onClick={handleClick}
+                        >
+                          <i className="fa fa-shopping-bag"></i>
+                          <span className="item-count">{carts.length}</span>
+                        </a>
+                      ) : (
+                        <a href="#!" className="offcanvas-toggle">
+                          <i className="fa fa-shopping-bag"></i>
+                          <span className="item-count">{carts.length}</span>
+                        </a>
+                      )}
+                    </li>
+                  )}
                   
                 </ul>
               </div>

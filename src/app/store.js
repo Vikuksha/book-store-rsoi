@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import productsReducer from "./slices/products";
 import settingsReducer from "./slices/settings";
 import userReducer from "./slices/user";
+import { basketSyncMiddleware } from "./middleware/basketSync";
 
 export const store = configureStore({
   reducer: {
@@ -9,4 +10,6 @@ export const store = configureStore({
      user: userReducer,
      settings: settingsReducer
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(basketSyncMiddleware),
 });

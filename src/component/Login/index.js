@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import AuthService from "../../services/AuthService";
 import { login as loginAction } from "../../app/slices/user";
+import { getBookImage } from "../../utils/bookImageLoader";
 
 const LoginArea = () => {
   const dispatch = useDispatch();
@@ -50,11 +51,51 @@ const LoginArea = () => {
       });
 
       if (result.success) {
-        // Обновляем Redux store
+        // Обновляем Redux store для пользователя
         dispatch(loginAction({
           name: `${result.user.First_name} ${result.user.Last_name}`,
           email: result.user.Email
         }));
+
+        // Загружаем корзину из Basket, если она есть
+        if (result.basket && result.basket.length > 0) {
+          console.log("🛒 Login: Loading cart from Basket:", result.basket.length, "items");
+          
+          // Конвертируем данные из Basket в формат для Redux cart
+          const cartItems = result.basket.map((basketItem) => {
+            const bookImage = getBookImage(basketItem.ID_Book);
+            const price = basketItem.hasDiscount && basketItem.discountedPrice 
+              ? basketItem.discountedPrice 
+              : parseFloat(basketItem.Book_Price) || 0;
+
+            return {
+              id: basketItem.ID_Book,
+              quantity: basketItem.Books_number || 1,
+              title: basketItem.Title || '',
+              price: price,
+              img: bookImage,
+              hover_img: bookImage,
+              hasDiscount: basketItem.hasDiscount || false,
+              originalPrice: basketItem.originalPrice || parseFloat(basketItem.Book_Price) || 0,
+              discountedPrice: basketItem.discountedPrice || price,
+              discountPercent: basketItem.discountPercent || 0,
+              stock_quantity: basketItem.Stock_quantity || 0,
+              description: basketItem.Description || ''
+            };
+          });
+
+          // Загружаем корзину в Redux store
+          dispatch({ 
+            type: 'products/loadCartFromBasket', 
+            payload: result.basket 
+          });
+
+          console.log("✅ Login: Cart loaded to Redux:", cartItems.length, "items");
+        } else {
+          // Если корзина пуста, очищаем Redux cart
+          dispatch({ type: 'products/clearCart' });
+          console.log("ℹ️ Login: Basket is empty, clearing cart");
+        }
 
         Swal.fire({
           icon: "success",

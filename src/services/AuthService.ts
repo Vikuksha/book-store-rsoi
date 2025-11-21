@@ -7,6 +7,8 @@ export interface AuthResult {
   user?: User;
   message: string;
   redirectTo?: 'login' | 'register' | 'dashboard';
+  basket?: any[]; // Корзина из таблицы Basket
+  totalPayment?: number; // Общая сумма корзины
 }
 
 class AuthService {
@@ -60,6 +62,8 @@ class AuthService {
 
       const user: User = result.data.user;
       const token = result.data.token;
+      const basket = result.data.basket || [];
+      const totalPayment = result.data.totalPayment || 0;
       
       // Сохраняем пользователя и токен
       localStorage.setItem("userData", JSON.stringify(user));
@@ -69,7 +73,9 @@ class AuthService {
         success: true,
         user: user,
         message: "Успешный вход в систему",
-        redirectTo: 'dashboard'
+        redirectTo: 'dashboard',
+        basket: basket,
+        totalPayment: totalPayment
       };
 
     } catch (err: any) {

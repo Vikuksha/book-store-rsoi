@@ -4,4 +4,8 @@ export interface CartItem {
     name: string;
     price: number;
     image: string;
+    hasDiscount?: boolean;
+    originalPrice?: number;
+    discountedPrice?: number;
+    discountPercent?: number;
 }

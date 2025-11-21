@@ -207,6 +207,55 @@ const productsSlice = createSlice({
         clearCart: (state) =>{
             state.carts = []
         },
+        // Load Cart from Basket (при логине)
+        loadCartFromBasket: (state, action) => {
+            const basketItems = action.payload || [];
+            console.log('🛒 Redux: loadCartFromBasket called with', basketItems.length, 'items');
+            
+            if (basketItems.length === 0) {
+                state.carts = [];
+                console.log('ℹ️ Redux: Basket is empty, clearing cart');
+                return;
+            }
+
+            // Импортируем getBookImage для получения изображений
+            const getBookImage = require('../../utils/bookImageLoader').getBookImage;
+            
+            // Конвертируем данные из Basket в формат для корзины Redux
+            const cartItems = basketItems.map((basketItem) => {
+                // Получаем информацию о книге из products, если она есть
+                const bookProduct = state.products.find((product) => {
+                    const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id;
+                    return productId === basketItem.ID_Book;
+                });
+
+                // Используем данные из products, если они есть, иначе из Basket
+                const price = basketItem.hasDiscount && basketItem.discountedPrice 
+                    ? basketItem.discountedPrice 
+                    : parseFloat(basketItem.Book_Price) || 0;
+
+                // Получаем изображение книги
+                const bookImage = getBookImage(basketItem.ID_Book);
+
+                return {
+                    id: basketItem.ID_Book,
+                    quantity: basketItem.Books_number || 1,
+                    title: basketItem.Title || '',
+                    price: price,
+                    img: bookProduct?.img || bookImage || `/assets/img/book/${basketItem.ID_Book}.png`,
+                    hover_img: bookProduct?.hover_img || bookImage || `/assets/img/book/${basketItem.ID_Book}.png`,
+                    hasDiscount: basketItem.hasDiscount || false,
+                    originalPrice: basketItem.originalPrice || parseFloat(basketItem.Book_Price) || 0,
+                    discountedPrice: basketItem.discountedPrice || price,
+                    discountPercent: basketItem.discountPercent || 0,
+                    stock_quantity: basketItem.Stock_quantity || 0,
+                    description: basketItem.Description || ''
+                };
+            });
+
+            state.carts = cartItems;
+            console.log('✅ Redux: Cart loaded from Basket:', cartItems.length, 'items');
+        },
         // Add to Favorite / Wishlist
         addToFav: (state, action) =>{
             let { id } = action.payload;
