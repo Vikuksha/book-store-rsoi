@@ -854,13 +854,13 @@ app.post('/api/order/create-complete', async (req, res) => {
     try {
       await client.query('BEGIN');
       
-      // Создаём заказ
+      // Создаём заказ со статусом "COLLECTING" (собирается)
       const orderResult = await client.query(
         `INSERT INTO "Order" ("Total_order_quantity", "Currency", "Order_status", "ID_User")
          VALUES ($1, $2, $3, $4) RETURNING *`,
         [order.Total_order_quantity || compositions.reduce((sum, c) => sum + c.Books_number, 0),
          order.Currency || 1,
-         order.Order_status || 'PENDING',
+         order.Order_status || 'COLLECTING', // Начинаем с состояния "собирается"
          order.ID_User]
       );
       
@@ -920,6 +920,44 @@ app.post('/api/order/create-complete', async (req, res) => {
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+// Update order status
+app.put('/api/order/:orderId/status', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required' });
+    }
+
+    const validStatuses = ['COLLECTING', 'DELIVERING', 'DELIVERED', 'PENDING', 'CANCELLED'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Valid statuses: ' + validStatuses.join(', ') });
+    }
+
+    const result = await pool.query(
+      `UPDATE "Order" 
+       SET "Order_status" = $1, "updated_at" = CURRENT_TIMESTAMP 
+       WHERE "ID" = $2 
+       RETURNING *`,
+      [status, orderId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.json({
+      success: true,
+      order: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

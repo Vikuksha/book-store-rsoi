@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import ServiceManager from "../../services/ServiceManager";
+import AuthService from "../../services/AuthService";
+import OrderStatusTracker from "../Order/OrderStatusTracker";
 
 const TotalCart = (props) => {
   let carts = useSelector((state) => state.products.carts);
+  const dispatch = useDispatch();
+  const authService = new AuthService();
   const [discountInfo, setDiscountInfo] = useState({ 
     discount: 0, 
     discountPercent: 0, 
     finalTotal: 0 
   });
+  const [orderId, setOrderId] = useState(null);
+  const [showOrderTracker, setShowOrderTracker] = useState(false);
 
   // Алгоритм расчёта скидки
   const calculateDiscount = (subtotal, orderQuantity) => {
@@ -97,6 +103,20 @@ const TotalCart = (props) => {
   const handleCheckout = async (e) => {
     e.preventDefault();
     
+    // Проверка авторизации
+    const user = authService.getCurrentUser();
+    if (!user || !user.ID) {
+      Swal.fire({
+        icon: "warning",
+        title: "Требуется авторизация",
+        text: "Пожалуйста, войдите в систему для оформления заказа.",
+        confirmButtonText: "OK",
+      }).then(() => {
+        window.location.href = "/login";
+      });
+      return;
+    }
+    
     // Проверка наличия на складе перед оформлением заказа
     try {
       const serviceManager = ServiceManager.getInstance();
@@ -131,24 +151,65 @@ const TotalCart = (props) => {
         return;
       }
       
-      // Если всё в наличии, продолжаем оформление заказа
+      // Создаем заказ
+      const orderQuantity = carts.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const subtotal = cartTotal();
+      
+      const orderData = {
+        order: {
+          Total_order_quantity: orderQuantity,
+          Currency: 1,
+          Order_status: 'COLLECTING', // Начинаем с состояния "собирается"
+          ID_User: user.ID
+        },
+        compositions: compositions
+      };
+
+      const createOrderResponse = await fetch(
+        `${process.env.REACT_APP_SERVER_API || 'http://localhost:3003'}/api/order/create-complete`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          },
+          body: JSON.stringify(orderData)
+        }
+      );
+
+      if (!createOrderResponse.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const orderResult = await createOrderResponse.json();
+      const createdOrderId = orderResult.order.ID;
+
+      console.log("✅ Order created with ID:", createdOrderId);
+
+      // Показываем трекер состояний заказа
+      setOrderId(createdOrderId);
+      setShowOrderTracker(true);
+
       Swal.fire({
         icon: "success",
-        title: "Заказ успешно оформлен!",
-        text: "Ваш заказ был размещён.",
+        title: "Заказ создан!",
+        text: "Ваш заказ начал обрабатываться.",
         confirmButtonText: "OK",
-      }).then(() => {
-        window.location.href = props.fullGrid ? "/order-success" : "/";
       });
     } catch (error) {
-      console.error('Error checking stock:', error);
+      console.error('Error during checkout:', error);
       Swal.fire({
         icon: "error",
         title: "Ошибка",
-        text: "Не удалось проверить наличие товара. Попробуйте позже.",
+        text: "Не удалось оформить заказ. Попробуйте позже.",
         confirmButtonText: "OK",
       });
     }
+  };
+
+  const handleOrderComplete = () => {
+    setShowOrderTracker(false);
+    setOrderId(null);
   };
 
   return (
@@ -197,16 +258,32 @@ const TotalCart = (props) => {
             </p>
           </div>
           <div className="checkout_btn">
-            <Link
-              to="#!"
-              className="theme-btn-one btn-black-overlay btn_sm"
-              onClick={handleCheckout}
-            >
-              Proceed to Checkout
-            </Link>
+            {!showOrderTracker ? (
+              <Link
+                to="#!"
+                className="theme-btn-one btn-black-overlay btn_sm"
+                onClick={handleCheckout}
+              >
+                Proceed to Checkout
+              </Link>
+            ) : (
+              <div style={{ textAlign: "center", padding: "10px" }}>
+                <p style={{ color: "#28a745", fontWeight: "bold" }}>
+                  Заказ обрабатывается...
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
+      
+      {/* Отображение трекера состояний заказа */}
+      {showOrderTracker && orderId && (
+        <OrderStatusTracker 
+          orderId={orderId} 
+          onComplete={handleOrderComplete}
+        />
+      )}
     </div>
   );
 };
