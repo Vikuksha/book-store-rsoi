@@ -63,7 +63,21 @@ const CartArea = () => {
                                 </Link>
                               </td>
                               <td className="product-price">
-                                ${data.price}.00
+                                {data.hasDiscount ? (
+                                    <div>
+                                        <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>
+                                            ${(data.originalPrice || data.price).toFixed(2)}
+                                        </div>
+                                        <div style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+                                            ${(data.discountedPrice || data.price).toFixed(2)}
+                                        </div>
+                                        <div style={{ color: '#e74c3c', fontSize: '12px' }}>
+                                            -{data.discountPercent || 25}%
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span>${typeof data.price === 'number' ? data.price.toFixed(2) : data.price}</span>
+                                )}
                               </td>
                               <td className="product_quantity">
                                 <input
@@ -80,7 +94,18 @@ const CartArea = () => {
                                 />
                               </td>
                               <td className="product_total">
-                                ${data.price * (data.quantity || 1)}.00
+                                {data.hasDiscount ? (
+                                    <div>
+                                        <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>
+                                            ${((data.originalPrice || data.price) * (data.quantity || 1)).toFixed(2)}
+                                        </div>
+                                        <div style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+                                            ${((data.discountedPrice || data.price) * (data.quantity || 1)).toFixed(2)}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span>${(typeof data.price === 'number' ? data.price : parseFloat(data.price) || 0) * (data.quantity || 1)}.00</span>
+                                )}
                               </td>
                             </tr>
                           ))}

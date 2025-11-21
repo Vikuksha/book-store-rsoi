@@ -69,7 +69,8 @@ class DataAdapterService {
   }
 
   // Convert Book to ProductCard format (for UI components)
-  public convertBookToProductCard(book: Book): any {
+  // index: позиция книги в списке (0, 1, 2...) - для первых 3 книг будет показана метка "New"
+  public convertBookToProductCard(book: Book, index: number = 0): any {
     try {
       // Импортируем функцию для загрузки изображений
       const getBookImage = require('../utils/bookImageLoader').getBookImage;
@@ -80,9 +81,12 @@ class DataAdapterService {
       // Используем Description из БД, если оно есть, иначе пустую строку
       const fullDescription = book.Description || '';
       
+      // Показываем метку "New" только на первых трех книгах (индекс 0, 1, 2)
+      const labels = index < 3 ? "New" : null;
+      
       const productCard = {
         id: book.ID,
-        labels: "New",
+        labels: labels,
         category: "book",
         img: bookImage,
         hover_img: bookImage, // Используем то же изображение для hover
@@ -105,9 +109,10 @@ class DataAdapterService {
     } catch (error) {
       console.error(`❌ Error converting book ${book.ID}:`, error);
       // Возвращаем базовую структуру даже при ошибке
+      const labels = index < 3 ? "New" : null;
       return {
         id: book.ID,
-        labels: "New",
+        labels: labels,
         category: "book",
         img: '',
         hover_img: '',

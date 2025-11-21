@@ -32,7 +32,14 @@ const ProductCard = (props) => {
                             alt="Product" />
                     </Link>
                     <span className="badges">
-                        <span className={(['hot','new','sale'][Math.round(Math.random()*2)])}>{props.data.labels}</span>
+                        {props.data.hasDiscount && (
+                            <span className="sale" style={{ backgroundColor: '#e74c3c', color: '#fff', padding: '5px 10px', borderRadius: '3px' }}>
+                                -{props.data.discountPercent || 25}%
+                            </span>
+                        )}
+                        {props.data.labels && (
+                            <span className="new">{props.data.labels}</span>
+                        )}
                     </span>
                     {/* <div className="actions">
                         <a href="#!" className="action wishlist" title="Wishlist" onClick={() => addToFav(props.data.id)}><AiOutlineHeart /></a>
@@ -46,20 +53,36 @@ const ProductCard = (props) => {
                         <Link to={`/product-details-one/${props.data.id}`}>{props.data.title}</Link>
                     </h5>
                     <span className="price">
-                        <span className="new">${typeof props.data.price === 'number' ? props.data.price.toFixed(2) : props.data.price}</span>
-                    </span>
-                    {props.data.rating && (
-                        <div className="rating_wrap" style={{ marginTop: '10px' }}>
-                            <div className="rating">
-                                <RatingStar maxScore={5} rating={props.data.rating.rate || 0} id={`rating-star-${props.data.id}`} />
-                            </div>
-                            {props.data.rating.count > 0 && (
-                                <span className="rating_num" style={{ marginLeft: '5px', fontSize: '12px', color: '#666' }}>
-                                    ({props.data.rating.count})
+                        {props.data.hasDiscount ? (
+                            <>
+                                <span className="old" style={{ textDecoration: 'line-through', color: '#999', marginRight: '10px' }}>
+                                    ${(props.data.originalPrice || props.data.price).toFixed(2)}
                                 </span>
-                            )}
+                                <span className="new" style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+                                    ${(props.data.discountedPrice || props.data.price).toFixed(2)}
+                                </span>
+                                <span style={{ marginLeft: '8px', color: '#e74c3c', fontSize: '12px', fontWeight: 'bold' }}>
+                                    -{props.data.discountPercent || 25}%
+                                </span>
+                            </>
+                        ) : (
+                            <span className="new">${typeof props.data.price === 'number' ? props.data.price.toFixed(2) : props.data.price}</span>
+                        )}
+                    </span>
+                    <div className="rating_wrap" style={{ marginTop: '10px' }}>
+                        <div className="rating">
+                            <RatingStar 
+                                maxScore={5} 
+                                rating={props.data.rating?.rate || 0} 
+                                id={`rating-star-${props.data.id}`} 
+                            />
                         </div>
-                    )}
+                        {(props.data.rating?.count || 0) > 0 && (
+                            <span className="rating_num" style={{ marginLeft: '5px', fontSize: '12px', color: '#666' }}>
+                                ({props.data.rating.count})
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
 

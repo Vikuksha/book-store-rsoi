@@ -43,9 +43,15 @@ const ProductCard = (props) => {
                     </div>
                     <div className="rating_wrap">
                         <div className="rating">
-                            <RatingStar maxScore={5} rating={props.data.rating.rate} id="rating-star-furniture" />
+                            <RatingStar 
+                                maxScore={5} 
+                                rating={props.data.rating?.rate || 0} 
+                                id={`rating-star-furniture-${props.data.id}`} 
+                            />
                         </div>
-                        <span className="rating_num">({props.data.rating.count})</span>
+                        {(props.data.rating?.count || 0) > 0 && (
+                            <span className="rating_num">({props.data.rating.count})</span>
+                        )}
                     </div>
                     <div className="add-to-cart">
                         <a href="#!" className="offcanvas-toggle  theme-btn-one bg-black btn_sm" onClick={() => addToCart(props.data.id)}>

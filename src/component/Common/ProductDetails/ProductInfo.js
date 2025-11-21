@@ -60,7 +60,17 @@ const ProductInfo = () => {
                 
                 setUsers(usersData);
             } catch (error) {
-                console.error('Error loading reviews:', error);
+                console.error('❌ Error loading reviews:', error);
+                if (error.response) {
+                    console.error('API Error Response:', error.response.data);
+                    console.error('API Error Status:', error.response.status);
+                } else if (error.request) {
+                    console.error('No response from server. Is the server running?');
+                } else {
+                    console.error('Error details:', error.message);
+                }
+                // Устанавливаем пустой массив при ошибке, чтобы не показывать ошибку пользователю
+                setReviews([]);
             } finally {
                 setLoading(false);
             }

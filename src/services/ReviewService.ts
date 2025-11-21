@@ -81,13 +81,19 @@ class ReviewService {
   public async getReviewsByBook(bookId: number): Promise<Review[]> {
     try {
       const url = `${this.path}/api/review/book/${bookId}`;
+      console.log(`🔄 ReviewService: Fetching reviews for book ${bookId} from ${url}`);
       const result = await axios.get(url);
-      console.log("getReviewsByBook:", result);
+      console.log(`✅ ReviewService: Received ${result.data?.length || 0} reviews for book ${bookId}`, result.data);
 
-      return result.data;
-    } catch (err) {
-      console.log("Error, getReviewsByBook: ", err);
-      throw err;
+      return result.data || [];
+    } catch (err: any) {
+      console.error("❌ ReviewService: Error in getReviewsByBook:", err);
+      if (err.response) {
+        console.error("Response status:", err.response.status);
+        console.error("Response data:", err.response.data);
+      }
+      // Возвращаем пустой массив вместо выброса ошибки, чтобы не ломать UI
+      return [];
     }
   }
 
@@ -107,13 +113,19 @@ class ReviewService {
   public async getAverageRating(bookId: number): Promise<{ averageRating: number; reviewCount: number }> {
     try {
       const url = `${this.path}/api/review/book/${bookId}/average`;
+      console.log(`🔄 ReviewService: Fetching average rating for book ${bookId} from ${url}`);
       const result = await axios.get(url);
-      console.log("getAverageRating:", result);
+      console.log(`✅ ReviewService: Average rating for book ${bookId}:`, result.data);
 
-      return result.data;
-    } catch (err) {
-      console.log("Error, getAverageRating: ", err);
-      throw err;
+      return result.data || { averageRating: 0, reviewCount: 0 };
+    } catch (err: any) {
+      console.warn(`⚠️ ReviewService: Error getting average rating for book ${bookId}:`, err);
+      if (err.response) {
+        console.warn("Response status:", err.response.status);
+        console.warn("Response data:", err.response.data);
+      }
+      // Возвращаем значения по умолчанию вместо выброса ошибки
+      return { averageRating: 0, reviewCount: 0 };
     }
   }
 }

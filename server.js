@@ -523,16 +523,29 @@ app.get('/api/review/book/:bookId', async (req, res) => {
   try {
     const { bookId } = req.params;
     
+    console.log(`📝 Fetching reviews for book ID: ${bookId}`);
+    console.log(`📊 Database: ${process.env.DB_NAME || 'bookstore'}`);
+    
     const result = await pool.query(
       'SELECT * FROM "Reviews" WHERE "Id_Book" = $1 ORDER BY "created_at" DESC',
       [bookId]
     );
     
+    console.log(`✅ Found ${result.rows.length} reviews for book ${bookId}`);
+    
     res.json(result.rows);
     
   } catch (error) {
-    console.error('Error fetching reviews by book:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Error fetching reviews by book:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail
+    });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      detail: error.message 
+    });
   }
 });
 
@@ -540,19 +553,34 @@ app.get('/api/review/book/:bookId/average', async (req, res) => {
   try {
     const { bookId } = req.params;
     
+    console.log(`📊 Fetching average rating for book ID: ${bookId}`);
+    
     const result = await pool.query(
       'SELECT COALESCE(AVG("Grade"), 0) as "averageRating", COUNT(*) as "reviewCount" FROM "Reviews" WHERE "Id_Book" = $1',
       [bookId]
     );
     
+    const averageRating = parseFloat(result.rows[0].averageRating) || 0;
+    const reviewCount = parseInt(result.rows[0].reviewCount) || 0;
+    
+    console.log(`✅ Average rating for book ${bookId}: ${averageRating} (${reviewCount} reviews)`);
+    
     res.json({
-      averageRating: parseFloat(result.rows[0].averageRating) || 0,
-      reviewCount: parseInt(result.rows[0].reviewCount) || 0
+      averageRating: averageRating,
+      reviewCount: reviewCount
     });
     
   } catch (error) {
-    console.error('Error fetching average rating:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Error fetching average rating:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail
+    });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      detail: error.message 
+    });
   }
 });
 
@@ -594,7 +622,31 @@ app.post('/api/review/create', async (req, res) => {
     
   } catch (error) {
     console.error('Error creating review:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      constraint: error.constraint
+    });
+    
+    // Более детальные сообщения об ошибках
+    if (error.code === '23503') {
+      return res.status(400).json({ 
+        error: 'Foreign key constraint failed',
+        detail: error.detail || 'Book or User does not exist'
+      });
+    }
+    if (error.code === '23505') {
+      return res.status(409).json({ 
+        error: 'Review already exists',
+        detail: 'This user has already reviewed this book'
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Internal server error',
+      detail: error.message 
+    });
   }
 });
 

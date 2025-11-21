@@ -61,10 +61,36 @@ const TotalCart = (props) => {
     });
   }, [carts]);
 
+  // Рассчитываем оригинальную сумму без скидок на товары
+  const originalSubtotal = () => {
+    return carts.reduce(function (total, item) {
+      const originalPrice = item.originalPrice 
+        ? item.originalPrice 
+        : (typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0);
+      return total + (item.quantity || 1) * originalPrice;
+    }, 0);
+  };
+
+  // Рассчитываем сумму со скидками на товары
   const cartTotal = () => {
     return carts.reduce(function (total, item) {
-      const price = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+      // Используем цену со скидкой, если есть скидка, иначе обычную цену
+      const price = item.hasDiscount && item.discountedPrice 
+        ? item.discountedPrice 
+        : (typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0);
       return total + (item.quantity || 1) * price;
+    }, 0);
+  };
+
+  // Рассчитываем общую сумму скидок на товары
+  const productDiscountsTotal = () => {
+    return carts.reduce(function (total, item) {
+      if (item.hasDiscount && item.originalPrice && item.discountedPrice) {
+        const originalTotal = (item.quantity || 1) * item.originalPrice;
+        const discountedTotal = (item.quantity || 1) * item.discountedPrice;
+        return total + (originalTotal - discountedTotal);
+      }
+      return total;
     }, 0);
   };
 
@@ -132,24 +158,37 @@ const TotalCart = (props) => {
       <div className="coupon_code right">
         <h3>Cart Total</h3>
         <div className="coupon_inner">
+          {/* Оригинальная сумма без скидок на товары */}
+          <div className="cart_subtotal">
+            <p>Original Subtotal</p>
+            <p className="cart_amount">${(originalSubtotal() || 0).toFixed(2)}</p>
+          </div>
+          
+          {/* Скидки на отдельные товары (25% на каждую 3-ю книгу) */}
+          {productDiscountsTotal() > 0 && (
+            <div className="cart_subtotal">
+              <p style={{ color: '#e74c3c', fontWeight: 'bold' }}>Product Discounts (25% off)</p>
+              <p className="cart_amount" style={{ color: '#e74c3c', fontWeight: 'bold' }}>
+                -${(productDiscountsTotal() || 0).toFixed(2)}
+              </p>
+            </div>
+          )}
+          
+          {/* Сумма после скидок на товары */}
           <div className="cart_subtotal">
             <p>Subtotal</p>
             <p className="cart_amount">${(cartTotal() || 0).toFixed(2)}</p>
           </div>
+          
+          {/* Общая скидка на заказ (если применима) */}
           {discountInfo && discountInfo.discountPercent > 0 && (
             <div className="cart_subtotal">
-              <p>Скидка ({discountInfo.discountPercent || 0}%)</p>
+              <p>Order Discount ({discountInfo.discountPercent || 0}%)</p>
               <p className="cart_amount" style={{ color: '#28a745' }}>
                 -${(discountInfo.discount || 0).toFixed(2)}
               </p>
             </div>
           )}
-          <div className="cart_subtotal ">
-            <p>Shipping</p>
-            <p className="cart_amount">
-              <span>Flat Rate:</span> $0.00
-            </p>
-          </div>
 
           <div className="cart_subtotal">
             <p>Total</p>

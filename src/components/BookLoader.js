@@ -30,15 +30,18 @@ const BookLoader = () => {
           books.map(async (book) => {
             try {
               if (!book || !book.ID) {
+                console.warn(`⚠️ BookLoader: Invalid book data for rating:`, book);
                 return { book, rating: { rate: 0, count: 0 } };
               }
               const ratingData = await serviceManager.reviewService.getAverageRating(book.ID);
+              const rating = {
+                rate: ratingData?.averageRating || 0,
+                count: ratingData?.reviewCount || 0
+              };
+              console.log(`✅ BookLoader: Rating for book ${book.ID}:`, rating);
               return {
                 book,
-                rating: {
-                  rate: ratingData.averageRating || 0,
-                  count: ratingData.reviewCount || 0
-                }
+                rating
               };
             } catch (error) {
               console.warn(`⚠️ BookLoader: Error loading rating for book ${book?.ID}:`, error);
@@ -47,17 +50,43 @@ const BookLoader = () => {
           })
         );
         
-        // Конвертируем книги в формат для ProductCard с оценками
+        // Конвертируем книги в формат для ProductCard с оценками и скидками
         console.log('🔄 BookLoader: Converting books to product format...');
-        const bookProducts = booksWithRatings.map(({ book, rating }) => {
+        const bookProducts = booksWithRatings.map(({ book, rating }, index) => {
           try {
             if (!book || !book.ID) {
               console.warn('⚠️ BookLoader: Invalid book data:', book);
               return null;
             }
-            const product = dataAdapter.convertBookToProductCard(book);
+            const product = dataAdapter.convertBookToProductCard(book, index);
             // Обновляем рейтинг из базы данных
-            product.rating = rating;
+            product.rating = {
+              rate: rating.rate || 0,
+              count: rating.count || 0
+            };
+            
+            // Алгоритм скидки: каждая 3-я книга (индекс 2, 5, 8, ...) получает скидку 25%
+            // Индекс начинается с 0, поэтому проверяем (index + 1) % 3 === 0
+            const isDiscounted = (index + 1) % 3 === 0;
+            if (isDiscounted) {
+              const discountPercent = 25;
+              const originalPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
+              const discountedPrice = originalPrice * (1 - discountPercent / 100);
+              
+              product.discountPercent = discountPercent;
+              product.originalPrice = originalPrice;
+              product.discountedPrice = discountedPrice;
+              product.hasDiscount = true;
+              
+              console.log(`🎯 BookLoader: Product ${product.id} - Discount 25% applied. Original: $${originalPrice.toFixed(2)}, Discounted: $${discountedPrice.toFixed(2)}`);
+            } else {
+              product.discountPercent = 0;
+              product.originalPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
+              product.discountedPrice = product.originalPrice;
+              product.hasDiscount = false;
+            }
+            
+            console.log(`✅ BookLoader: Product ${product.id} - Rating set to:`, product.rating);
             return product;
           } catch (error) {
             console.error(`❌ BookLoader: Error converting book ${book?.ID}:`, error);
