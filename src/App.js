@@ -36,6 +36,7 @@ const CustomerAccountDetails = loadable(() => pMinDelay(import('./page/my-accoun
 const AccountEdit = loadable(() => pMinDelay(import('./page/vendor/account-edit'), 250), { fallback: <Loading /> });
 const Login = loadable(() => pMinDelay(import('./page/login'), 250), { fallback: <Loading /> });
 const Register = loadable(() => pMinDelay(import('./page/register'), 250), { fallback: <Loading /> });
+const AdminPanel = loadable(() => pMinDelay(import('./page/admin'), 250), { fallback: <Loading /> });
 const Error = loadable(() => pMinDelay(import('./page/error'), 250), { fallback: <Loading /> });
 // const PrivacyPolicy = loadable(() => pMinDelay(import('./page/privacy-policy'), 250), { fallback: <Loading /> });
 const Faqs = loadable(() => pMinDelay(import('./page/faqs'), 250), { fallback: <Loading /> });
@@ -85,6 +86,7 @@ const App = () => {
             <Route path='/account-edit' exact component={AccountEdit} />
             <Route path='/login' exact component={Login} />
             <Route path='/register' exact component={Register} />
+            <Route path='/admin' exact component={AdminPanel} />
             {/* <Route path='/privacy-policy' exact component={PrivacyPolicy} /> */}
             <Route path='/help' exact component={Faqs} />
             {/* <Route path='/contact-one' exact component={ContactOne} /> */}

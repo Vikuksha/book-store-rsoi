@@ -2,11 +2,12 @@
 export interface User {
   ID: number; // BIGINT primary key
   Email: string; // VARCHAR(500)
-  Password: string; // VARCHAR(255)
+  Password?: string; // VARCHAR(255) - optional in frontend
   First_name: string; // VARCHAR(255)
   Last_name: string; // VARCHAR(255)
   Phone: string; // VARCHAR(255)
   Address: string; // VARCHAR(255)
+  isAdmin?: boolean; // Admin flag
 }
 
 export interface UserInput {

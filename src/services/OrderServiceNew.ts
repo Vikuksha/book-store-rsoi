@@ -90,8 +90,11 @@ class OrderServiceNew {
 
   public async getOrdersByUser(userId: number): Promise<Order[]> {
     try {
-      const url = `${this.path}/order/user/${userId}`;
-      const result = await axios.get(url);
+      const token = localStorage.getItem('authToken');
+      const url = `${this.path}/api/order/user/${userId}`;
+      const result = await axios.get(url, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       console.log("getOrdersByUser:", result);
 
       return result.data;

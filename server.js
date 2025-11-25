@@ -19,11 +19,18 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
+// Rate limiting - более мягкий для разработки
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  max: 1000, // limit each IP to 1000 requests per windowMs (увеличено для разработки)
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: (req) => {
+    // Пропускаем rate limiting для определенных важных endpoints
+    const importantEndpoints = ['/api/book/all', '/api/book/'];
+    return importantEndpoints.some(endpoint => req.path.startsWith(endpoint));
+  }
 });
 app.use('/api/', limiter);
 
@@ -93,11 +100,21 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
+      console.error('❌ Token verification error:', err);
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
+    console.log('✅ Token verified, user data:', user);
     req.user = user;
     next();
   });
+};
+
+// Middleware для проверки прав администратора
+const requireAdmin = (req, res, next) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
 };
 
 // User Routes
@@ -154,10 +171,19 @@ app.post('/api/user/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    // Специальная обработка для admin/admin
+    let effectiveEmail = Email;
+    let isAdminLogin = false;
+    
+    if (Email === 'admin' && Password === 'admin') {
+      effectiveEmail = 'admin@bookstore.com';
+      isAdminLogin = true;
+    }
+
     // Find user
     const result = await pool.query(
       'SELECT "ID", "Email", "Password", "First_name", "Last_name", "Phone", "Address" FROM "Users" WHERE "Email" = $1',
-      [Email]
+      [effectiveEmail]
     );
 
     if (result.rows.length === 0) {
@@ -167,10 +193,20 @@ app.post('/api/user/login', async (req, res) => {
     const user = result.rows[0];
 
     // Check password
-    const isValidPassword = await bcrypt.compare(Password, user.Password);
+    let isValidPassword = false;
+    if (isAdminLogin) {
+      // Для admin/admin проверяем пароль напрямую
+      isValidPassword = await bcrypt.compare('admin', user.Password);
+    } else {
+      isValidPassword = await bcrypt.compare(Password, user.Password);
+    }
+    
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+
+    // Проверяем, является ли пользователь администратором
+    const isAdmin = user.Email === 'admin@bookstore.com' || user.Email === 'admin';
 
     // Generate JWT token
     const token = jwt.sign(
@@ -178,7 +214,8 @@ app.post('/api/user/login', async (req, res) => {
         userId: user.ID, 
         email: user.Email,
         firstName: user.First_name,
-        lastName: user.Last_name
+        lastName: user.Last_name,
+        isAdmin: isAdmin
       },
       JWT_SECRET,
       { expiresIn: '24h' }
@@ -230,7 +267,10 @@ app.post('/api/user/login', async (req, res) => {
     res.json({
       message: 'Login successful',
       token: token,
-      user: user,
+      user: {
+        ...user,
+        isAdmin: isAdmin
+      },
       basket: basketItems,
       totalPayment: basketItems.length > 0 ? parseFloat(basketItems[0].Payment) || 0 : 0
     });
@@ -511,6 +551,89 @@ app.get('/api/book/:id', async (req, res) => {
     
   } catch (error) {
     console.error('Error fetching book:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// API для обновления книги (только для администраторов)
+app.put('/api/book/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { Price, Stock_quantity, Discount_percent } = req.body;
+
+    // Проверяем существование книги
+    const bookCheck = await pool.query('SELECT * FROM "Book" WHERE "ID" = $1', [id]);
+    if (bookCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+
+    const updateFields = [];
+    const updateValues = [];
+    let paramCount = 1;
+
+    if (Price !== undefined) {
+      updateFields.push(`"Price" = $${paramCount}`);
+      updateValues.push(Price);
+      paramCount++;
+    }
+
+    if (Stock_quantity !== undefined) {
+      updateFields.push(`"Stock_quantity" = $${paramCount}`);
+      updateValues.push(Stock_quantity);
+      paramCount++;
+    }
+
+    if (Discount_percent !== undefined) {
+      // Проверяем, существует ли колонка Discount_percent, если нет - добавляем
+      const columnCheck = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'Book' AND column_name = 'Discount_percent'
+      `);
+      
+      if (columnCheck.rows.length === 0) {
+        // Добавляем колонку если её нет
+        await pool.query(`
+          ALTER TABLE "Book" 
+          ADD COLUMN IF NOT EXISTS "Discount_percent" DECIMAL(5,2) DEFAULT 0 CHECK ("Discount_percent" >= 0 AND "Discount_percent" <= 100)
+        `);
+        console.log('✅ Added Discount_percent column to Book table');
+      }
+      
+      updateFields.push(`"Discount_percent" = $${paramCount}`);
+      updateValues.push(Discount_percent);
+      paramCount++;
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    updateFields.push(`"updated_at" = CURRENT_TIMESTAMP`);
+    updateValues.push(id);
+
+    const updateQuery = `
+      UPDATE "Book" 
+      SET ${updateFields.join(', ')} 
+      WHERE "ID" = $${paramCount} 
+      RETURNING *
+    `;
+
+    const result = await pool.query(updateQuery, updateValues);
+
+    console.log(`✅ Admin ${req.user.email} updated book ${id}:`, {
+      Price: Price !== undefined ? Price : 'unchanged',
+      Stock_quantity: Stock_quantity !== undefined ? Stock_quantity : 'unchanged',
+      Discount_percent: Discount_percent !== undefined ? Discount_percent : 'unchanged'
+    });
+
+    res.json({
+      message: 'Book updated successfully',
+      book: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error updating book:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1065,6 +1188,65 @@ app.post('/api/order/create-complete', async (req, res) => {
 });
 
 // Update order status
+// Get orders by user ID
+app.get('/api/order/user/:userId', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userIdNum = parseInt(userId);
+
+    console.log(`📦 API: Requesting orders for user ID: ${userIdNum}`);
+    console.log(`📦 API: Authenticated user from token:`, req.user);
+    console.log(`📦 API: Authenticated user ID from token: ${req.user.userId}`);
+    console.log(`📦 API: Is admin: ${req.user.isAdmin}`);
+
+    // Приводим к числу для сравнения
+    const authenticatedUserId = parseInt(req.user.userId) || req.user.userId;
+    
+    // Проверяем, что пользователь запрашивает свои заказы или является администратором
+    if (authenticatedUserId !== userIdNum && !req.user.isAdmin) {
+      console.error(`❌ API: Access denied. Requested user: ${userIdNum} (type: ${typeof userIdNum}), Authenticated user: ${authenticatedUserId} (type: ${typeof authenticatedUserId})`);
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Получаем заказы пользователя из таблицы Order
+    const ordersQuery = `
+      SELECT 
+        "ID",
+        "Order_date",
+        "Currency",
+        "Order_status",
+        "Tracking_number",
+        "ID_User"
+      FROM "Order"
+      WHERE "ID_User" = $1
+      ORDER BY "Order_date" DESC
+    `;
+
+    console.log(`📦 API: Executing query for user ${userIdNum}`);
+    const result = await pool.query(ordersQuery, [userIdNum]);
+    console.log(`📦 API: Found ${result.rows.length} orders in database`);
+
+    // Обрабатываем результаты
+    const orders = result.rows.map(row => {
+      return {
+        ID: row.ID,
+        Order_date: row.Order_date,
+        Currency: parseFloat(row.Currency) || 0,
+        Order_status: row.Order_status,
+        Tracking_number: row.Tracking_number,
+        ID_User: row.ID_User
+      };
+    });
+
+    console.log(`✅ API: Retrieved ${orders.length} orders for user ${userIdNum}:`, orders);
+    res.json(orders);
+
+  } catch (error) {
+    console.error('❌ API: Error fetching user orders:', error);
+    res.status(500).json({ error: 'Internal server error', detail: error.message });
+  }
+});
+
 app.put('/api/order/:orderId/status', async (req, res) => {
   try {
     const { orderId } = req.params;

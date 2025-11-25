@@ -11,6 +11,8 @@ const Sidebar = () => {
     let dispatch = useDispatch();
     const history = useHistory()
     let status = useSelector((state) => state.user.status);
+    const authService = new AuthService();
+    const isAdmin = authService.isAdmin();
     const logout = async () => {
         try {
             // Очищаем localStorage через AuthService
@@ -43,7 +45,9 @@ const Sidebar = () => {
                         <li> <Link to="/my-account/customer-order" className={location.pathname === '/my-account/customer-order'?'active':null}><i className="fa fa-cart-arrow-down"></i>Orders</Link></li>
                         {/* <li><Link to="/my-account/customer-download" className={location.pathname === '/my-account/customer-download'?'active':null}><i className="fa fa-cloud-download"></i>Downloads</Link></li> */}
                         {/* <li><Link to="/my-account/customer-address" className={location.pathname === '/my-account/customer-address'?'active':null}><i className="fa fa-map-marker"></i>Addresses</Link></li> */}
-                        <li><Link to="/my-account/customer-account-details" className={location.pathname === '/my-account/customer-account-details'?'active':null}><i className="fa fa-user"></i>Account details</Link></li>
+                        {isAdmin ? (
+                            <li><Link to="/admin" className={location.pathname === '/admin'?'active':null}><i className="fa fa-cog"></i>Control Panel</Link></li>
+                        ) : null}
                         {
                             status?<li><Link to="/#!" onClick={(e)=>{e.preventDefault();logout()}}><i className="fa fa-sign-out"></i>logout</Link></li>:null
                         }

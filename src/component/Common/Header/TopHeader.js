@@ -13,6 +13,8 @@ const TopHeader = () => {
 
     let status = useSelector((state) => state.user.status);
     let user = useSelector((state) => state.user.user);
+    const authService = new AuthService();
+    const isAdmin = authService.isAdmin();
 
     const logout = async () => {
         try {
@@ -71,12 +73,13 @@ const TopHeader = () => {
                         {user.name || "Jhon Doe"}{" "}
                         <i className="fa fa-angle-down"></i>
                         <ul className="custom_dropdown">
-                          <li>
-                            <Link to="/my-account/customer-account-details">
-                              <i className="fa fa-tachometer"></i> Account
-                              Details
-                            </Link>
-                          </li>
+                          {isAdmin ? (
+                            <li>
+                              <Link to="/admin">
+                                <i className="fa fa-cog"></i> Control Panel
+                              </Link>
+                            </li>
+                          ) : null}
                           <li>
                             <Link to="/my-account/customer-order">
                               <i className="fa fa-cubes"></i> My Orders

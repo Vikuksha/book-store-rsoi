@@ -164,6 +164,12 @@ class AuthService {
     }
   }
 
+  // Проверить, является ли пользователь администратором
+  public isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user ? (user.isAdmin === true || user.Email === 'admin@bookstore.com' || user.Email === 'admin') : false;
+  }
+
   // Проверить авторизован ли пользователь
   public isAuthenticated(): boolean {
     return this.getCurrentUser() !== null;

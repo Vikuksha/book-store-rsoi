@@ -65,25 +65,15 @@ const BookLoader = () => {
               count: rating.count || 0
             };
             
-            // Алгоритм скидки: каждая 3-я книга (индекс 2, 5, 8, ...) получает скидку 25%
-            // Индекс начинается с 0, поэтому проверяем (index + 1) % 3 === 0
-            const isDiscounted = (index + 1) % 3 === 0;
-            if (isDiscounted) {
-              const discountPercent = 25;
-              const originalPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
-              const discountedPrice = originalPrice * (1 - discountPercent / 100);
-              
-              product.discountPercent = discountPercent;
-              product.originalPrice = originalPrice;
-              product.discountedPrice = discountedPrice;
-              product.hasDiscount = true;
-              
-              console.log(`🎯 BookLoader: Product ${product.id} - Discount 25% applied. Original: $${originalPrice.toFixed(2)}, Discounted: $${discountedPrice.toFixed(2)}`);
+            // Используем данные из базы данных (цена, скидка, количество уже установлены в convertBookToProductCard)
+            // Проверяем, что данные правильно установлены
+            const discountPercent = product.discountPercent || 0;
+            const hasDiscount = product.hasDiscount || false;
+            
+            if (hasDiscount && discountPercent > 0) {
+              console.log(`🎯 BookLoader: Product ${product.id} - Discount ${discountPercent}% from DB. Original: $${(product.originalPrice || 0).toFixed(2)}, Discounted: $${(product.discountedPrice || 0).toFixed(2)}`);
             } else {
-              product.discountPercent = 0;
-              product.originalPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
-              product.discountedPrice = product.originalPrice;
-              product.hasDiscount = false;
+              console.log(`ℹ️ BookLoader: Product ${product.id} - No discount (from DB)`);
             }
             
             console.log(`✅ BookLoader: Product ${product.id} - Rating set to:`, product.rating);
@@ -122,7 +112,18 @@ const BookLoader = () => {
       loadBooks();
     }, 100);
 
-    return () => clearTimeout(timer);
+    // Слушаем событие обновления книг (когда администратор обновляет книгу)
+    const handleBooksUpdate = () => {
+      console.log('🔄 BookLoader: Books updated event received, reloading books...');
+      loadBooks();
+    };
+
+    window.addEventListener('booksUpdated', handleBooksUpdate);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('booksUpdated', handleBooksUpdate);
+    };
   }, [dispatch, dataAdapter]);
 
   return null; // Этот компонент не рендерит ничего

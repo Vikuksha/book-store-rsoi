@@ -54,7 +54,8 @@ const LoginArea = () => {
         // Обновляем Redux store для пользователя
         dispatch(loginAction({
           name: `${result.user.First_name} ${result.user.Last_name}`,
-          email: result.user.Email
+          email: result.user.Email,
+          isAdmin: result.user.isAdmin || false
         }));
 
         // Загружаем корзину из Basket, если она есть

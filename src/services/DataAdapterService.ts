@@ -84,6 +84,14 @@ class DataAdapterService {
       // Показываем метку "New" только на первых трех книгах (индекс 0, 1, 2)
       const labels = index < 3 ? "New" : null;
       
+      // Получаем скидку из базы данных
+      const discountPercent = book.Discount_percent || 0;
+      const hasDiscount = discountPercent > 0;
+      const originalPrice = typeof book.Price === 'number' ? book.Price : parseFloat(String(book.Price)) || 0;
+      const discountedPrice = hasDiscount 
+        ? originalPrice * (1 - discountPercent / 100) 
+        : originalPrice;
+
       const productCard = {
         id: book.ID,
         labels: labels,
@@ -91,8 +99,12 @@ class DataAdapterService {
         img: bookImage,
         hover_img: bookImage, // Используем то же изображение для hover
         title: book.Title,
-        price: book.Price,
-        stock_quantity: book.Stock_quantity, // Сохраняем количество на складе
+        price: discountedPrice, // Используем цену со скидкой, если есть
+        originalPrice: originalPrice, // Оригинальная цена
+        discountedPrice: discountedPrice, // Цена со скидкой
+        discountPercent: discountPercent, // Процент скидки из БД
+        hasDiscount: hasDiscount, // Есть ли скидка
+        stock_quantity: book.Stock_quantity || 0, // Сохраняем количество на складе из БД
         description: `Author: ${book.Author}, Published: ${book.Publishing_year}`, // Краткое описание для карточки
         fullDescription: fullDescription, // Полное описание из БД (пустая строка, если его нет)
         rating: {
@@ -110,6 +122,14 @@ class DataAdapterService {
       console.error(`❌ Error converting book ${book.ID}:`, error);
       // Возвращаем базовую структуру даже при ошибке
       const labels = index < 3 ? "New" : null;
+      // Получаем скидку из базы данных (в блоке catch)
+      const discountPercent = book.Discount_percent || 0;
+      const hasDiscount = discountPercent > 0;
+      const originalPrice = typeof book.Price === 'number' ? book.Price : parseFloat(String(book.Price)) || 0;
+      const discountedPrice = hasDiscount 
+        ? originalPrice * (1 - discountPercent / 100) 
+        : originalPrice;
+
       return {
         id: book.ID,
         labels: labels,
@@ -117,7 +137,12 @@ class DataAdapterService {
         img: '',
         hover_img: '',
         title: book.Title,
-        price: book.Price,
+        price: discountedPrice, // Используем цену со скидкой, если есть
+        originalPrice: originalPrice,
+        discountedPrice: discountedPrice,
+        discountPercent: discountPercent,
+        hasDiscount: hasDiscount,
+        stock_quantity: book.Stock_quantity || 0,
         description: `Author: ${book.Author}, Published: ${book.Publishing_year}`,
         rating: {
           rate: 4.5,

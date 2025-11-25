@@ -10,12 +10,13 @@ const userSlice = createSlice({
     reducers: {
         // Login
         login: (state, action) => {
-            let { name, email } = action.payload;
+            let { name, email, isAdmin } = action.payload;
             state.status = true
             state.user = {
                 name: name,
-                role: 'customer',
-                email: email
+                role: isAdmin ? 'admin' : 'customer',
+                email: email,
+                isAdmin: isAdmin || false
             }
         },
         // Register

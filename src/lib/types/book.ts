@@ -7,6 +7,7 @@ export interface Book {
   Stock_quantity: number; // INT
   Publishing_year: number; // INT
   Description?: string; // TEXT (optional)
+  Discount_percent?: number; // DECIMAL(5,2) - процент скидки (0-100)
 }
 
 export interface BookInput {

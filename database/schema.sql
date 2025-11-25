@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS "Book" (
     "Stock_quantity" INTEGER NOT NULL DEFAULT 0,
     "Publishing_year" INTEGER NOT NULL,
     "Description" TEXT,
+    "Discount_percent" DECIMAL(5,2) DEFAULT 0 CHECK ("Discount_percent" >= 0 AND "Discount_percent" <= 100),
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -60,6 +61,21 @@ BEGIN
     ) THEN
         ALTER TABLE "Order"
         ALTER COLUMN "Currency" TYPE DECIMAL(10,2) USING "Currency"::DECIMAL(10,2);
+    END IF;
+END $$;
+
+-- Автоматическое добавление колонки Discount_percent в таблицу Book, если её нет
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'Book'
+        AND column_name = 'Discount_percent'
+    ) THEN
+        ALTER TABLE "Book"
+        ADD COLUMN "Discount_percent" DECIMAL(5,2) DEFAULT 0 CHECK ("Discount_percent" >= 0 AND "Discount_percent" <= 100);
     END IF;
 END $$;
 
