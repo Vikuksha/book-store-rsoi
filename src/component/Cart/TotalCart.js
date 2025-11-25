@@ -120,10 +120,65 @@ const TotalCart = (props) => {
     // Проверка наличия на складе перед оформлением заказа
     try {
       const serviceManager = ServiceManager.getInstance();
-      const compositions = carts.map(item => ({
-        ID_Book: typeof item.id === 'string' ? parseInt(item.id) : item.id,
-        Books_number: item.quantity || 1
+      
+      // Детальное логирование исходных данных корзины
+      console.log('🛒 Raw cart data before grouping:', {
+        cartLength: carts.length,
+        cartItems: carts.map(item => ({
+          id: item.id,
+          id_type: typeof item.id,
+          quantity: item.quantity,
+          quantity_type: typeof item.quantity,
+          name: item.name || item.title,
+          full_item: item
+        }))
+      });
+      
+      // Группируем книги по ID_Book и суммируем количество
+      // Если в корзине есть несколько записей с одинаковым ID_Book, объединяем их
+      const groupedCompositions = {};
+      
+      carts.forEach((item, index) => {
+        const ID_Book = typeof item.id === 'string' ? parseInt(item.id) : item.id;
+        const Books_number = item.quantity || 1;
+        
+        console.log(`📚 Processing cart item ${index + 1}:`, {
+          raw_id: item.id,
+          parsed_ID_Book: ID_Book,
+          raw_quantity: item.quantity,
+          parsed_Books_number: Books_number,
+          is_valid: ID_Book && !isNaN(ID_Book)
+        });
+        
+        if (ID_Book && !isNaN(ID_Book)) {
+          if (groupedCompositions[ID_Book]) {
+            const oldValue = groupedCompositions[ID_Book];
+            groupedCompositions[ID_Book] += Books_number;
+            console.log(`  ➕ Book ${ID_Book}: ${oldValue} + ${Books_number} = ${groupedCompositions[ID_Book]}`);
+          } else {
+            groupedCompositions[ID_Book] = Books_number;
+            console.log(`  ✨ Book ${ID_Book}: new entry with quantity ${Books_number}`);
+          }
+        } else {
+          console.warn(`  ⚠️ Invalid item skipped: ID_Book=${ID_Book}, Books_number=${Books_number}`);
+        }
+      });
+      
+      // Преобразуем сгруппированные данные в массив
+      const compositions = Object.entries(groupedCompositions).map(([ID_Book, Books_number]) => ({
+        ID_Book: parseInt(ID_Book),
+        Books_number: parseInt(Books_number)
       }));
+      
+      console.log('📦 Compositions grouped on frontend:', {
+        originalCartItems: carts.length,
+        groupedCompositions: compositions.length,
+        groupedData: Object.entries(groupedCompositions).map(([ID_Book, Books_number]) => ({
+          ID_Book: parseInt(ID_Book),
+          Books_number: parseInt(Books_number)
+        })),
+        finalCompositions: compositions
+      });
       
       // Проверяем наличие на складе
       const stockCheckResponse = await fetch(`${process.env.REACT_APP_SERVER_API || 'http://localhost:3003'}/api/order/check-stock`, {

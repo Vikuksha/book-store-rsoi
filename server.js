@@ -910,36 +910,132 @@ app.post('/api/order/create-complete', async (req, res) => {
       const orderResult = await client.query(insertQuery, insertParams);
       
       const createdOrder = orderResult.rows[0];
-      const orderId = createdOrder.ID;
+      const orderId = createdOrder.ID; // ID заказа из таблицы Order
       
-      console.log('✅ Order created:', {
+      console.log('✅ Order created in table "Order":', {
         ID: createdOrder.ID,
         Tracking_number: createdOrder.Tracking_number,
         Order_status: createdOrder.Order_status,
         Currency: createdOrder.Currency
       });
       
+      console.log('🔗 Order ID to use in Order_composition:', orderId);
+      
+      // Логируем входящие данные для отладки
+      console.log('📥 Raw compositions received from frontend:', {
+        count: compositions.length,
+        compositions: compositions.map(c => ({
+          ID_Book: c.ID_Book,
+          ID_Book_type: typeof c.ID_Book,
+          Books_number: c.Books_number,
+          Books_number_type: typeof c.Books_number,
+          raw: c
+        }))
+      });
+      
+      // Группируем книги по ID_Book и суммируем Books_number
+      // Если в корзине есть несколько записей с одинаковым ID_Book, объединяем их
+      const groupedCompositions = {};
+      
+      for (const composition of compositions) {
+        // Приводим к числу для надежности
+        const ID_Book = typeof composition.ID_Book === 'string' ? parseInt(composition.ID_Book) : composition.ID_Book;
+        const Books_number = typeof composition.Books_number === 'string' ? parseInt(composition.Books_number) : (composition.Books_number || 1);
+        
+        if (!ID_Book || isNaN(ID_Book) || !Books_number || isNaN(Books_number) || Books_number <= 0) {
+          console.error('❌ Invalid composition data:', {
+            original: composition,
+            parsed: { ID_Book, Books_number }
+          });
+          throw new Error(`Invalid composition data: ID_Book=${ID_Book}, Books_number=${Books_number}`);
+        }
+        
+        console.log(`📚 Processing: ID_Book=${ID_Book}, Books_number=${Books_number}`);
+        
+        // Группируем по ID_Book и суммируем количество
+        if (groupedCompositions[ID_Book]) {
+          const oldValue = groupedCompositions[ID_Book];
+          groupedCompositions[ID_Book] += Books_number;
+          console.log(`  ➕ Book ${ID_Book}: ${oldValue} + ${Books_number} = ${groupedCompositions[ID_Book]}`);
+        } else {
+          groupedCompositions[ID_Book] = Books_number;
+          console.log(`  ✨ Book ${ID_Book}: new entry with quantity ${Books_number}`);
+        }
+      }
+      
+      console.log('📦 Grouped compositions by ID_Book:', {
+        orderId: orderId,
+        originalCount: compositions.length,
+        groupedCount: Object.keys(groupedCompositions).length,
+        groupedCompositions: Object.entries(groupedCompositions).map(([ID_Book, Books_number]) => ({
+          ID_Book: parseInt(ID_Book),
+          Books_number: Books_number
+        }))
+      });
+      
       // Создаём состав заказа и обновляем количество на складе
       const orderCompositions = [];
       
-      for (const composition of compositions) {
-        const { ID_Book, Books_number } = composition;
+      // Создаем записи в Order_composition для каждой уникальной книги
+      for (const [ID_Book, totalBooks_number] of Object.entries(groupedCompositions)) {
+        const bookId = parseInt(ID_Book);
+        const totalQuantity = parseInt(totalBooks_number);
+        
+        console.log('💾 Inserting into Order_composition:', {
+          ID_Book: bookId,
+          ID_Book_type: typeof bookId,
+          ID_Order: orderId,
+          ID_Order_type: typeof orderId,
+          Books_number: totalQuantity,
+          Books_number_type: typeof totalQuantity,
+          raw_totalBooks_number: totalBooks_number,
+          raw_totalBooks_number_type: typeof totalBooks_number
+        });
         
         // Создаём запись в Order_composition
-        const compResult = await client.query(
-          `INSERT INTO "Order_composition" ("Books_number", "ID_Order", "ID_Book")
-           VALUES ($1, $2, $3) RETURNING *`,
-          [Books_number, orderId, ID_Book]
-        );
+        // Записываем: ID_Book (ID книги), ID_Order (ID заказа из таблицы Order), Books_number (общее количество книг с этим ID)
+        // ID_Order должен совпадать с ID из таблицы Order
+        const insertQuery = `INSERT INTO "Order_composition" ("Books_number", "ID_Order", "ID_Book")
+           VALUES ($1, $2, $3) RETURNING *`;
+        const insertParams = [totalQuantity, orderId, bookId];
         
-        orderCompositions.push(compResult.rows[0]);
+        console.log('💾 SQL Query:', insertQuery);
+        console.log('💾 SQL Params:', insertParams);
         
-        // Уменьшаем количество на складе
+        const compResult = await client.query(insertQuery, insertParams);
+        
+        const createdComposition = compResult.rows[0];
+        orderCompositions.push(createdComposition);
+        
+        // Проверяем, что ID_Order в Order_composition совпадает с ID из Order
+        if (createdComposition.ID_Order !== orderId) {
+          console.error('❌ ERROR: ID_Order mismatch!', {
+            expectedOrderId: orderId,
+            actualID_Order: createdComposition.ID_Order
+          });
+          throw new Error(`ID_Order mismatch: expected ${orderId}, got ${createdComposition.ID_Order}`);
+        }
+        
+        console.log('✅ Order_composition created with matching Order ID:', {
+          Composition_ID: createdComposition.ID,
+          ID_Book: createdComposition.ID_Book,
+          ID_Order: createdComposition.ID_Order, // Должен совпадать с orderId
+          Order_ID_from_Order_table: orderId, // ID из таблицы Order
+          Match: createdComposition.ID_Order === orderId ? '✅ MATCH' : '❌ MISMATCH',
+          Books_number: createdComposition.Books_number, // Общее количество книг с этим ID
+          Note: `If user added ${totalQuantity} books with ID ${bookId}, Books_number = ${totalQuantity}`
+        });
+        
+        // Уменьшаем количество на складе на общее количество
         await client.query(
           `UPDATE "Book" SET "Stock_quantity" = "Stock_quantity" - $1, "updated_at" = CURRENT_TIMESTAMP WHERE "ID" = $2`,
-          [Books_number, ID_Book]
+          [totalQuantity, bookId]
         );
+        
+        console.log(`📚 Book ${bookId} stock updated: -${totalQuantity} (total quantity for this book in order)`);
       }
+      
+      console.log(`✅ All ${orderCompositions.length} Order_composition entries created successfully`);
       
       await client.query('COMMIT');
       

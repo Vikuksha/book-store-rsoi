@@ -218,11 +218,40 @@ const productsSlice = createSlice({
                 return;
             }
 
+            // Группируем записи Basket по ID_Book и суммируем Books_number
+            // Если в Basket есть несколько записей с одинаковым ID_Book, объединяем их
+            const groupedBasket = {};
+            
+            basketItems.forEach((basketItem) => {
+                const ID_Book = basketItem.ID_Book;
+                const Books_number = parseInt(basketItem.Books_number) || 1;
+                
+                if (groupedBasket[ID_Book]) {
+                    // Если запись уже есть, суммируем количество
+                    const existingQuantity = parseInt(groupedBasket[ID_Book].Books_number) || 1;
+                    groupedBasket[ID_Book].Books_number = existingQuantity + Books_number;
+                    console.log(`  ➕ Redux: Book ${ID_Book}: ${existingQuantity} + ${Books_number} = ${groupedBasket[ID_Book].Books_number}`);
+                } else {
+                    groupedBasket[ID_Book] = { ...basketItem, Books_number: Books_number };
+                    console.log(`  ✨ Redux: Book ${ID_Book}: new entry with quantity ${Books_number}`);
+                }
+            });
+            
+            const groupedBasketItems = Object.values(groupedBasket);
+            console.log('🛒 Redux: Grouped basket items:', {
+                originalCount: basketItems.length,
+                groupedCount: groupedBasketItems.length,
+                groupedItems: groupedBasketItems.map(item => ({
+                    ID_Book: item.ID_Book,
+                    Books_number: item.Books_number
+                }))
+            });
+
             // Импортируем getBookImage для получения изображений
             const getBookImage = require('../../utils/bookImageLoader').getBookImage;
             
             // Конвертируем данные из Basket в формат для корзины Redux
-            const cartItems = basketItems.map((basketItem) => {
+            const cartItems = groupedBasketItems.map((basketItem) => {
                 // Получаем информацию о книге из products, если она есть
                 const bookProduct = state.products.find((product) => {
                     const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id;

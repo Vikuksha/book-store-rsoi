@@ -60,6 +60,7 @@ const OrderStatusTracker = ({ orderId, onComplete }) => {
 
     let interval;
     let timeout;
+    let isMounted = true;
 
     // Обновляем статус на сервере при изменении
     const updateStatusOnServer = async (status) => {
@@ -76,14 +77,19 @@ const OrderStatusTracker = ({ orderId, onComplete }) => {
       
       // Таймер обратного отсчета
       interval = setInterval(() => {
+        if (!isMounted) return;
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
             // Переходим к следующему статусу
-            updateStatusOnServer("DELIVERING").then(() => {
-              setCurrentStatus("DELIVERING");
-              setTimeRemaining(10);
-            });
+            if (isMounted) {
+              updateStatusOnServer("DELIVERING").then(() => {
+                if (isMounted) {
+                  setCurrentStatus("DELIVERING");
+                  setTimeRemaining(10);
+                }
+              });
+            }
             return 10;
           }
           return prev - 1;
@@ -95,43 +101,52 @@ const OrderStatusTracker = ({ orderId, onComplete }) => {
       
       // Таймер обратного отсчета
       interval = setInterval(() => {
+        if (!isMounted) return;
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
             // Переходим к финальному статусу
-            updateStatusOnServer("DELIVERED").then(async () => {
-              setCurrentStatus("DELIVERED");
-              
-              // Очищаем корзину после завершения
-              dispatch({ type: "products/clearCart" });
-              
-              // Очищаем корзину в базе данных
-              const user = authService.getCurrentUser();
-              if (user && user.ID) {
-                try {
-                  const serviceManager = (await import("../../services/ServiceManager")).default.getInstance();
-                  await serviceManager.basketService.clearBasket(user.ID);
-                  console.log("✅ Basket cleared after order completion");
-                } catch (error) {
-                  console.error("❌ Error clearing basket:", error);
+            if (isMounted) {
+              updateStatusOnServer("DELIVERED").then(async () => {
+                if (!isMounted) return;
+                
+                setCurrentStatus("DELIVERED");
+                
+                // Очищаем корзину после завершения
+                dispatch({ type: "products/clearCart" });
+                
+                // Очищаем корзину в базе данных
+                const user = authService.getCurrentUser();
+                if (user && user.ID) {
+                  try {
+                    const serviceManager = (await import("../../services/ServiceManager")).default.getInstance();
+                    await serviceManager.basketService.clearBasket(user.ID);
+                    console.log("✅ Basket cleared after order completion");
+                  } catch (error) {
+                    console.error("❌ Error clearing basket:", error);
+                  }
                 }
-              }
-              
-              // Вызываем callback при завершении
-              if (onComplete) {
-                onComplete();
-              }
-              
-              // Показываем уведомление о завершении
-              Swal.fire({
-                icon: "success",
-                title: "Заказ получен!",
-                text: "Ваш заказ успешно доставлен и получен.",
-                confirmButtonText: "OK",
-              }).then(() => {
-                window.location.href = "/";
+                
+                // Вызываем callback при завершении
+                if (onComplete && isMounted) {
+                  onComplete();
+                }
+                
+                // Показываем уведомление о завершении
+                if (isMounted) {
+                  Swal.fire({
+                    icon: "success",
+                    title: "Заказ получен!",
+                    text: "Ваш заказ успешно доставлен и получен.",
+                    confirmButtonText: "OK",
+                  }).then(() => {
+                    if (isMounted) {
+                      window.location.href = "/";
+                    }
+                  });
+                }
               });
-            });
+            }
             return 0;
           }
           return prev - 1;
@@ -140,6 +155,7 @@ const OrderStatusTracker = ({ orderId, onComplete }) => {
     }
 
     return () => {
+      isMounted = false;
       if (interval) clearInterval(interval);
       if (timeout) clearTimeout(timeout);
     };
