@@ -2,8 +2,6 @@ import React, { useEffect } from "react";
 import logo from "../../../assets/img/bh-l.png"; // <- BU SIZNING BOOKHEAVEN LOGO RASMI
 import payment from "../../../assets/img/common/payment.png";
 import { Link } from "react-router-dom";
-import Cookie from "../Cookie";
-// import NewsletterModal from '../NewsletterModal';
 import { useSelector, useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 

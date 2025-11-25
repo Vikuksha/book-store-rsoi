@@ -30,10 +30,8 @@ const OrderComplete = loadable(() => pMinDelay(import('./page/order/order-comple
 // const VendorSetting = loadable(() => pMinDelay(import('./page/vendor/vendor-setting'), 250), { fallback: <Loading /> });
 const MyAccounts = loadable(() => pMinDelay(import('./page/my-account'), 250), { fallback: <Loading /> });
 const CustomerOrder = loadable(() => pMinDelay(import('./page/my-account/customer-order'), 250), { fallback: <Loading /> });
-const CustomerDownloads = loadable(() => pMinDelay(import('./page/my-account/customer-downloads'), 250), { fallback: <Loading /> });
-const CustomerAddress = loadable(() => pMinDelay(import('./page/my-account/customer-address'), 250), { fallback: <Loading /> });
 const CustomerAccountDetails = loadable(() => pMinDelay(import('./page/my-account/customer-account-details'), 250), { fallback: <Loading /> });
-const AccountEdit = loadable(() => pMinDelay(import('./page/vendor/account-edit'), 250), { fallback: <Loading /> });
+// const AccountEdit = loadable(() => pMinDelay(import('./page/vendor/account-edit'), 250), { fallback: <Loading /> });
 const Login = loadable(() => pMinDelay(import('./page/login'), 250), { fallback: <Loading /> });
 const Register = loadable(() => pMinDelay(import('./page/register'), 250), { fallback: <Loading /> });
 const AdminPanel = loadable(() => pMinDelay(import('./page/admin'), 250), { fallback: <Loading /> });
@@ -80,10 +78,8 @@ const App = () => {
             <Route path='/vendor/vendor-setting' exact component={VendorSetting} /> */}
             <Route path='/my-account' exact component={MyAccounts} />
             <Route path='/my-account/customer-order' exact component={CustomerOrder} />
-            <Route path='/my-account/customer-download' exact component={CustomerDownloads} />
-            <Route path='/my-account/customer-address' exact component={CustomerAddress} />
             <Route path='/my-account/customer-account-details' exact component={CustomerAccountDetails} />
-            <Route path='/account-edit' exact component={AccountEdit} />
+            {/* <Route path='/account-edit' exact component={AccountEdit} /> */}
             <Route path='/login' exact component={Login} />
             <Route path='/register' exact component={Register} />
             <Route path='/admin' exact component={AdminPanel} />

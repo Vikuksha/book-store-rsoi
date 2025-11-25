@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import ProductInfo from './ProductInfo'
-import RelatedProduct from './RelatedProduct'
 import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from 'react-router-dom';
@@ -166,7 +165,6 @@ const ProductDetailsOne = () => {
                 </div>
             </div>
         }
-        {product && product.id && <RelatedProduct />}
         </>
     )
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import img1 from "../../assets/img/team/team1.png";
+import img1 from "../../assets/img/team/team1.avif";
 
 const AccountDetailsEdit = () => {
   const history = useHistory();
