@@ -50,7 +50,7 @@
   "scripts": {
     "start": "./start-servers.sh",
     "client": "react-scripts start",
-    "server": "node server.js",
+    "server": "cd server && node server.js",
     "dev": "./start-servers.sh",
     "build": "react-scripts build",
     "test": "react-scripts test",

@@ -6,12 +6,13 @@ echo ""
 # Остановка существующих процессов
 echo "🛑 Остановка существующих процессов..."
 pkill -f "react-scripts" 2>/dev/null
+pkill -f "node server/server.js" 2>/dev/null
 pkill -f "node server.js" 2>/dev/null
 sleep 2
 
 # Запуск бэкенд сервера в фоне
 echo "📊 Запуск бэкенд сервера (порт 3003)..."
-node server.js > backend.log 2>&1 &
+(cd server && node server.js > ../backend.log 2>&1) &
 BACKEND_PID=$!
 
 # Ждем запуска бэкенда
@@ -62,6 +63,7 @@ cleanup() {
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
     pkill -f "react-scripts" 2>/dev/null
+    pkill -f "node server/server.js" 2>/dev/null
     pkill -f "node server.js" 2>/dev/null
     exit 0
 }
