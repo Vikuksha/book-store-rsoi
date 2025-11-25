@@ -1,5 +1,5 @@
 import React from 'react'
-import pdf from '../../app/data/andshop-invoice.pdf'
+
 const Download = () => {
     return (
         <>
@@ -20,13 +20,13 @@ const Download = () => {
                                 <td>Black T-Shirt For Woman</td>
                                 <td>May 10, 2018</td>
                                 <td><span className="badge badge-success">Paid</span></td>
-                                <td><a href={pdf} className="view" download>Click Here To Download Your Invoice</a></td>
+                                <td><span className="text-muted">Invoice not available</span></td>
                             </tr>
                             <tr>
                                 <td>Maxi Dress</td>
                                 <td>Sep 11, 2018</td>
                                 <td> <span className="badge badge-success">Paid</span> </td>
-                                <td><a href={pdf} className="view" download>Click Here To Download Your Invoice</a></td>
+                                <td><span className="text-muted">Invoice not available</span></td>
                             </tr>
                         </tbody>
                     </table>
