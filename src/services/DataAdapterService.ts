@@ -107,6 +107,8 @@ class DataAdapterService {
         stock_quantity: book.Stock_quantity || 0, // Сохраняем количество на складе из БД
         description: `Author: ${book.Author}, Published: ${book.Publishing_year}`, // Краткое описание для карточки
         fullDescription: fullDescription, // Полное описание из БД (пустая строка, если его нет)
+        author: book.Author, // Автор для фильтрации
+        publishing_year: book.Publishing_year, // Год публикации для фильтрации
         rating: {
           rate: 4.5,
           count: 0

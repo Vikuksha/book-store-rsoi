@@ -1,31 +1,26 @@
 export const FaqsData = [
   {
-    heading: "This Designer Bronzer Has Even Buyers Splurging!",
-    para: ` Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3
-    wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum
-    eiusmod. Brunch 3 wolf moon tempor.`
+    heading: "Как оформить заказ",
+    para: `Оформить заказ очень просто! Выберите понравившиеся книги, добавьте их в корзину, перейдите к оформлению заказа и заполните необходимые данные. После подтверждения заказа вы получите уведомление на электронную почту с деталями заказа и номером отслеживания.`
   },
   {
-    heading: "4 Tips for A Colorful Easter Tablescape",
-    para: `Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3
-    wolf moon officia aute.`
+    heading: "Сроки доставки",
+    para: `Стандартные сроки доставки составляют 3-7 рабочих дней по России и 7-14 рабочих дней в другие страны. Для крупных городов доступна экспресс-доставка (1-2 дня). Точные сроки доставки зависят от выбранного способа доставки и вашего региона.`
   },
   {
-    heading: "Hawaii Couples Trip Guide and Spring Break Faves",
-    para: `assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred
-    nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer
-    farm-to-table, raw denim aesthetic.`
+    heading: "Способы доставки",
+    para: `Мы предлагаем несколько способов доставки: курьерская доставка до двери, доставка в пункты выдачи заказов, почтовая доставка и самовывоз из нашего магазина. При оформлении заказа вы сможете выбрать наиболее удобный для вас вариант доставки.`
   },
   {
-    heading: "If You Struggle To Hit Your Goals, Try This Instead",
-    para: `Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer
-    farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus
-    labore sustainable VHS..`
+    heading: "Минимальная сумма заказа",
+    para: `Минимальная сумма заказа для бесплатной доставки составляет 1000 рублей. Для заказов на меньшую сумму стоимость доставки рассчитывается индивидуально в зависимости от веса и габаритов товара, а также выбранного способа доставки.`
   },
   {
-    heading: "This Designer Bronzer Has Even Buyers Splurging!",
-    para: ` Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3
-    wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum
-    eiusmod. Brunch 3 wolf moon tempor.`
+    heading: "Скидки",
+    para: `В нашем магазине действуют различные скидки и акции. Вы можете получить скидку при покупке нескольких книг, при регистрации на сайте, а также участвовать в сезонных распродажах. Информация о текущих скидках отображается на странице каждой книги.`
+  },
+  {
+    heading: "Специальные предложения",
+    para: `Мы регулярно проводим специальные акции и предложения: скидки на новинки, бонусы за покупку определенного количества книг, подарки при заказе на определенную сумму. Следите за нашими новостями и акциями, чтобы не упустить выгодные предложения!`
   }
 ]

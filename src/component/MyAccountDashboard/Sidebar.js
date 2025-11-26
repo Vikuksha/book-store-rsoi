@@ -42,7 +42,9 @@ const Sidebar = () => {
                 <div className="dashboard_tab_button">
                     <ul role="tablist" className="nav flex-column dashboard-list">
                         {/* <li><Link to="/my-account" className={location.pathname === '/my-account'?'active':null}><i className="fa fa-tachometer"></i>Dashboard</Link></li> */}
-                        <li> <Link to="/my-account/customer-order" className={location.pathname === '/my-account/customer-order'?'active':null}><i className="fa fa-cart-arrow-down"></i>Orders</Link></li>
+                        {!isAdmin && (
+                            <li> <Link to="/my-account/customer-order" className={location.pathname === '/my-account/customer-order'?'active':null}><i className="fa fa-cart-arrow-down"></i>Orders</Link></li>
+                        )}
                         {/* <li><Link to="/my-account/customer-download" className={location.pathname === '/my-account/customer-download'?'active':null}><i className="fa fa-cloud-download"></i>Downloads</Link></li> */}
                         {/* <li><Link to="/my-account/customer-address" className={location.pathname === '/my-account/customer-address'?'active':null}><i className="fa fa-map-marker"></i>Addresses</Link></li> */}
                         {isAdmin ? (
