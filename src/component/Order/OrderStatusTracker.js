@@ -5,7 +5,7 @@ import AuthService from "../../services/AuthService";
 
 const OrderStatusTracker = ({ orderId, onComplete }) => {
   const [currentStatus, setCurrentStatus] = useState("COLLECTING");
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const [timeRemaining, setTimeRemaining] = useState(30);
   const dispatch = useDispatch();
   const authService = new AuthService();
 
@@ -86,11 +86,11 @@ const OrderStatusTracker = ({ orderId, onComplete }) => {
               updateStatusOnServer("DELIVERING").then(() => {
                 if (isMounted) {
                   setCurrentStatus("DELIVERING");
-                  setTimeRemaining(10);
+                  setTimeRemaining(30);
                 }
               });
             }
-            return 10;
+            return 30;
           }
           return prev - 1;
         });
@@ -174,7 +174,6 @@ const OrderStatusTracker = ({ orderId, onComplete }) => {
         Статус заказа: {statusLabels[currentStatus]}
       </h3>
       <div style={{ fontSize: "18px", marginTop: "10px" }}>
-        <p>Осталось времени: <strong>{timeRemaining}</strong> секунд</p>
         <div style={{ marginTop: "15px" }}>
           <div style={{
             display: "flex",

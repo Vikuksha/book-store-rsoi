@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import ProductInfo from './ProductInfo'
+import ProductCard from '../Product/ProductCard'
 import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from 'react-router-dom';
@@ -11,9 +12,25 @@ const ProductDetailsOne = () => {
 
     let { id } = useParams();
     let product = useSelector((state) => state.products.single);
+    const allProducts = useSelector((state) => state.products.products);
     
     const [count, setCount] = useState(1)
     const [img, setImg] = useState('')
+    
+    // Получаем книги с таким же жанром (исключая текущую книгу)
+    const relatedBooks = useMemo(() => {
+        if (!product || !product.genre || !allProducts || allProducts.length === 0) {
+            return [];
+        }
+        
+        return allProducts
+            .filter(item => 
+                item.genre && 
+                item.genre.trim() === product.genre.trim() && 
+                item.id !== product.id
+            )
+            .slice(0, 4); // Показываем максимум 4 книги
+    }, [product, allProducts]);
     
     // Загружаем продукт при изменении id
     React.useEffect(() => {
@@ -79,6 +96,21 @@ const ProductDetailsOne = () => {
                             <div className="product_details_right_one">
                                 <div className="modal_product_content_one">
                                     <h3>{product.title || 'Untitled'}</h3>
+                                    {product.genre && (
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <span style={{
+                                                display: 'inline-block',
+                                                padding: '5px 12px',
+                                                backgroundColor: '#007bff',
+                                                color: '#ffffff',
+                                                borderRadius: '15px',
+                                                fontSize: '14px',
+                                                fontWeight: '500'
+                                            }}>
+                                                {product.genre}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="reviews_rating">
                                         <RatingStar maxScore={5} rating={product.rating?.rate || 0} id="rating-star-common" />
                                         {/* <span>({product.rating?.count || 0} Customer Reviews)</span> */}
@@ -150,6 +182,30 @@ const ProductDetailsOne = () => {
                         </div>
                     </div>
                     <ProductInfo />
+                    
+                    {/* Блок с книгами того же жанра */}
+                    {relatedBooks.length > 0 && (
+                        <div className="row" style={{ marginTop: '60px', paddingTop: '40px', borderTop: '2px solid #e9ecef' }}>
+                            <div className="col-12">
+                                <h3 style={{
+                                    fontSize: '24px',
+                                    fontWeight: '600',
+                                    marginBottom: '30px',
+                                    textAlign: 'center',
+                                    color: '#2c3e50'
+                                }}>
+                                    С этим товаром покупают
+                                </h3>
+                                <div className="row">
+                                    {relatedBooks.map((book, index) => (
+                                        <div className="col-lg-3 col-md-4 col-sm-6 col-12" key={book.id || index} style={{ marginBottom: '30px' }}>
+                                            <ProductCard data={book} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
             :

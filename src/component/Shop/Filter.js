@@ -44,6 +44,17 @@ const Filter = (props) => {
         }
     };
 
+    const handleGenreChange = (genre) => {
+        const selectedGenres = props.filterOptions?.selectedGenres || [];
+        const newSelectedGenres = selectedGenres.includes(genre)
+            ? selectedGenres.filter(g => g !== genre)
+            : [...selectedGenres, genre];
+        
+        if (props.onFilterChange) {
+            props.onFilterChange({ selectedGenres: newSelectedGenres });
+        }
+    };
+
     return (
         <div style={{
             backgroundColor: '#ffffff',
@@ -389,6 +400,72 @@ const Filter = (props) => {
                                         }}
                                     />
                                     <span>{year}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* Фильтр по жанрам */}
+            {props.uniqueGenres && props.uniqueGenres.length > 0 && (
+                <div style={{ marginTop: '25px' }}>
+                    <label style={{
+                        display: 'block',
+                        marginBottom: '12px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#495057',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                    }}>
+                        Жанры
+                    </label>
+                    <div style={{
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        padding: '10px',
+                        backgroundColor: '#ffffff'
+                    }}>
+                        {props.uniqueGenres.map((genre, index) => {
+                            const isSelected = props.filterOptions?.selectedGenres?.includes(genre) || false;
+                            return (
+                                <label
+                                    key={index}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        userSelect: 'none',
+                                        fontSize: '14px',
+                                        color: '#495057',
+                                        padding: '8px',
+                                        borderRadius: '4px',
+                                        marginBottom: '4px',
+                                        transition: 'background-color 0.2s',
+                                        backgroundColor: isSelected ? '#e7f3ff' : 'transparent'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isSelected) e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+                                    }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => handleGenreChange(genre)}
+                                        style={{
+                                            width: '18px',
+                                            height: '18px',
+                                            cursor: 'pointer',
+                                            marginRight: '10px'
+                                        }}
+                                    />
+                                    <span>{genre}</span>
                                 </label>
                             );
                         })}

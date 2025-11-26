@@ -8,6 +8,7 @@ export interface Book {
   Publishing_year: number; // INT
   Description?: string; // TEXT (optional)
   Discount_percent?: number; // DECIMAL(5,2) - процент скидки (0-100)
+  Genre?: string; // VARCHAR(255) - жанр книги
 }
 
 export interface BookInput {

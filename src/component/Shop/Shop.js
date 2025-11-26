@@ -13,14 +13,16 @@ const Shop = () => {
         hasDiscount: false,
         sortBy: 'newest',
         selectedAuthors: [],
-        selectedYears: []
+        selectedYears: [],
+        selectedGenres: []
     })
     
 
-    // Получаем уникальные авторы и годы для фильтров
+    // Получаем уникальные авторы, годы и жанры для фильтров
     const getUniqueValues = () => {
         const authors = new Set();
         const years = new Set();
+        const genres = new Set();
         
         allProducts.forEach(item => {
             // Получаем автора из поля author или из description
@@ -41,11 +43,16 @@ const Shop = () => {
                     years.add(parseInt(yearMatch[1]));
                 }
             }
+            // Получаем жанр из поля genre
+            if (item.genre && item.genre.trim() !== '') {
+                genres.add(item.genre.trim());
+            }
         });
         
         return {
             authors: Array.from(authors).sort(),
-            years: Array.from(years).sort((a, b) => b - a) // Сортируем по убыванию
+            years: Array.from(years).sort((a, b) => b - a), // Сортируем по убыванию
+            genres: Array.from(genres).sort() // Сортируем по алфавиту
         };
     };
 
@@ -98,6 +105,13 @@ const Shop = () => {
                     }
                 }
                 return year && filterOptions.selectedYears.includes(year);
+            });
+        }
+        
+        // Фильтрация по жанрам (множественный выбор)
+        if (filterOptions.selectedGenres && filterOptions.selectedGenres.length > 0) {
+            filtered = filtered.filter(item => {
+                return item.genre && filterOptions.selectedGenres.includes(item.genre.trim());
             });
         }
         
@@ -201,6 +215,7 @@ const Shop = () => {
             searchQuery.trim() !== '' ||
             (filterOptions.selectedAuthors && filterOptions.selectedAuthors.length > 0) ||
             (filterOptions.selectedYears && filterOptions.selectedYears.length > 0) ||
+            (filterOptions.selectedGenres && filterOptions.selectedGenres.length > 0) ||
             filterOptions.inStock === true ||
             filterOptions.hasDiscount === true
         );
@@ -262,6 +277,7 @@ const Shop = () => {
                   filterOptions={filterOptions}
                   uniqueAuthors={uniqueValues.authors}
                   uniqueYears={uniqueValues.years}
+                  uniqueGenres={uniqueValues.genres}
                 />
               </div>
               

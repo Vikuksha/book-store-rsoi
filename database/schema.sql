@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS "Book" (
     "Publishing_year" INTEGER NOT NULL,
     "Description" TEXT,
     "Discount_percent" DECIMAL(5,2) DEFAULT 0 CHECK ("Discount_percent" >= 0 AND "Discount_percent" <= 100),
+    "Genre" VARCHAR(255),
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -76,6 +77,21 @@ BEGIN
     ) THEN
         ALTER TABLE "Book"
         ADD COLUMN "Discount_percent" DECIMAL(5,2) DEFAULT 0 CHECK ("Discount_percent" >= 0 AND "Discount_percent" <= 100);
+    END IF;
+END $$;
+
+-- Автоматическое добавление колонки Genre в таблицу Book, если её нет
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'Book'
+        AND column_name = 'Genre'
+    ) THEN
+        ALTER TABLE "Book"
+        ADD COLUMN "Genre" VARCHAR(255);
     END IF;
 END $$;
 

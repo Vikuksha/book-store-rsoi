@@ -109,6 +109,7 @@ class DataAdapterService {
         fullDescription: fullDescription, // Полное описание из БД (пустая строка, если его нет)
         author: book.Author, // Автор для фильтрации
         publishing_year: book.Publishing_year, // Год публикации для фильтрации
+        genre: book.Genre || '', // Жанр книги
         rating: {
           rate: 4.5,
           count: 0
