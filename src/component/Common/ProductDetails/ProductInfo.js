@@ -124,54 +124,7 @@ const ProductInfo = () => {
             return;
         }
 
-        // Проверяем, не оставлял ли пользователь уже отзыв на эту книгу
-        const existingReview = reviews.find(r => r.id_User === currentUser.ID);
-        if (existingReview) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Отзыв уже оставлен',
-                text: 'Вы уже оставили отзыв на эту книгу. Вы можете обновить его.',
-                confirmButtonText: 'Обновить',
-                showCancelButton: true,
-                cancelButtonText: 'Отмена'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    // Обновляем существующий отзыв
-                    try {
-                        const serviceManager = ServiceManager.getInstance();
-                        await serviceManager.reviewService.updateReview({
-                            ID: existingReview.ID,
-                            Grade: reviewForm.Grade,
-                            Review: reviewForm.Review.trim() || undefined
-                        });
-                        
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Отзыв обновлён!',
-                            text: 'Ваш отзыв был успешно обновлён.',
-                            timer: 2000
-                        });
-
-                        // Обновляем список отзывов
-                        const bookId = typeof product.id === 'string' ? parseInt(product.id) : product.id;
-                        const bookReviews = await serviceManager.reviewService.getReviewsByBook(bookId);
-                        setReviews(bookReviews);
-
-                        // Сбрасываем форму
-                        setReviewForm({ Grade: 5, Review: '' });
-                        setShowReviewForm(false);
-                    } catch (error) {
-                        console.error('Error updating review:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Ошибка',
-                            text: error.response?.data?.error || 'Не удалось обновить отзыв.'
-                        });
-                    }
-                }
-            });
-            return;
-        }
+        // Убрана проверка на существующий отзыв - теперь пользователи могут оставлять несколько отзывов на одну книгу
 
         setSubmittingReview(true);
         try {
@@ -190,8 +143,9 @@ const ProductInfo = () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Отзыв добавлен!',
-                text: 'Ваш отзыв был успешно добавлен.',
-                timer: 2000
+                text: 'Ваш отзыв был успешно добавлен. Вы можете оставить еще один отзыв, если хотите.',
+                timer: 3000,
+                showConfirmButton: true
             });
 
             // Обновляем список отзывов и информацию о пользователях
@@ -208,9 +162,9 @@ const ProductInfo = () => {
                 }
             }
 
-            // Сбрасываем форму
+            // Сбрасываем форму, но оставляем её открытой для возможности добавить еще один отзыв
             setReviewForm({ Grade: 5, Review: '' });
-            setShowReviewForm(false);
+            // Форма остается открытой, чтобы пользователь мог оставить еще один отзыв
         } catch (error) {
             console.error('Error submitting review:', error);
             Swal.fire({
@@ -313,15 +267,38 @@ const ProductInfo = () => {
                                                     }}>
                                                         Оставить отзыв
                                                     </h5>
-                                                    {currentUser && (
-                                                        <p style={{ 
-                                                            margin: 0,
-                                                            fontSize: '14px',
-                                                            color: '#6c757d'
-                                                        }}>
-                                                            Вы вошли как: <strong>{currentUser.First_name} {currentUser.Last_name}</strong>
-                                                        </p>
-                                                    )}
+                                                    {currentUser && (() => {
+                                                        const userReviewsCount = reviews.filter(r => r.id_User === currentUser.ID).length;
+                                                        return (
+                                                            <div>
+                                                                <p style={{ 
+                                                                    margin: '0 0 8px 0',
+                                                                    fontSize: '14px',
+                                                                    color: '#6c757d'
+                                                                }}>
+                                                                    Вы вошли как: <strong>{currentUser.First_name} {currentUser.Last_name}</strong>
+                                                                    {userReviewsCount > 0 && (
+                                                                        <span style={{ 
+                                                                            marginLeft: '10px',
+                                                                            fontSize: '12px',
+                                                                            color: '#007bff',
+                                                                            fontWeight: 'normal'
+                                                                        }}>
+                                                                            (Ваших отзывов: {userReviewsCount})
+                                                                        </span>
+                                                                    )}
+                                                                </p>
+                                                                <p style={{ 
+                                                                    margin: 0,
+                                                                    fontSize: '12px',
+                                                                    color: '#28a745',
+                                                                    fontStyle: 'italic'
+                                                                }}>
+                                                                    💡 Вы можете оставить несколько отзывов на эту книгу
+                                                                </p>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </div>
                                                 <div style={{ marginBottom: '20px' }}>
                                                     <label style={{ 

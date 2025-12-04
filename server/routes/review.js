@@ -128,27 +128,33 @@ router.post('/create', async (req, res) => {
       return res.status(400).json({ error: 'Id_Book and id_User are required' });
     }
     
-    // Проверяем, существует ли уже отзыв от этого пользователя для этой книги
-    const existingReview = await pool.query(
-      'SELECT "ID" FROM "Reviews" WHERE "Id_Book" = $1 AND "id_User" = $2',
-      [Id_Book, id_User]
-    );
+    // Создаём новый отзыв (теперь можно создавать несколько отзывов от одного пользователя)
+    console.log('📝 Creating review:', { Grade, Id_Book, id_User, Review: Review ? Review.substring(0, 50) + '...' : null });
     
-    if (existingReview.rows.length > 0) {
-      // Обновляем существующий отзыв
-      const result = await pool.query(
-        'UPDATE "Reviews" SET "Grade" = $1, "Review" = $2, "updated_at" = CURRENT_TIMESTAMP WHERE "Id_Book" = $3 AND "id_User" = $4 RETURNING *',
-        [Grade, Review || null, Id_Book, id_User]
-      );
-      return res.json(result.rows[0]);
+    // Проверяем, нет ли UNIQUE constraint перед вставкой
+    const constraintCheck = await pool.query(`
+      SELECT conname 
+      FROM pg_constraint 
+      WHERE conrelid = '"Reviews"'::regclass 
+        AND contype = 'u' 
+        AND array_length(conkey, 1) = 2
+        AND conkey[1] = (SELECT attnum FROM pg_attribute WHERE attrelid = '"Reviews"'::regclass AND attname = 'Id_Book')
+        AND conkey[2] = (SELECT attnum FROM pg_attribute WHERE attrelid = '"Reviews"'::regclass AND attname = 'id_User')
+    `);
+    
+    if (constraintCheck.rows.length > 0) {
+      const constraintName = constraintCheck.rows[0].conname;
+      console.warn(`⚠️ Found UNIQUE constraint: ${constraintName}. Attempting to drop...`);
+      await pool.query(`ALTER TABLE "Reviews" DROP CONSTRAINT IF EXISTS "${constraintName}"`);
+      console.log(`✅ Constraint ${constraintName} dropped`);
     }
     
-    // Создаём новый отзыв
     const result = await pool.query(
       'INSERT INTO "Reviews" ("Grade", "Id_Book", "id_User", "Review") VALUES ($1, $2, $3, $4) RETURNING *',
       [Grade, Id_Book, id_User, Review || null]
     );
     
+    console.log('✅ Review created successfully:', result.rows[0].ID);
     res.status(201).json(result.rows[0]);
     
   } catch (error) {
@@ -167,11 +173,35 @@ router.post('/create', async (req, res) => {
         detail: error.detail || 'Book or User does not exist'
       });
     }
+    
+    // Если UNIQUE constraint все еще существует (для обратной совместимости)
     if (error.code === '23505') {
-      return res.status(409).json({ 
-        error: 'Review already exists',
-        detail: 'This user has already reviewed this book'
-      });
+      console.error('❌ UNIQUE constraint violation detected!');
+      console.error('Constraint name:', error.constraint);
+      console.error('Error detail:', error.detail);
+      console.error('Full error:', error);
+      
+      // Пытаемся найти и удалить constraint автоматически
+      try {
+        const constraintName = error.constraint || 'Reviews_Id_Book_id_User_key';
+        console.log(`🔧 Attempting to drop constraint: ${constraintName}`);
+        await pool.query(`ALTER TABLE "Reviews" DROP CONSTRAINT IF EXISTS "${constraintName}"`);
+        console.log(`✅ Constraint ${constraintName} dropped successfully`);
+        
+        // Пытаемся создать отзыв снова
+        const retryResult = await pool.query(
+          'INSERT INTO "Reviews" ("Grade", "Id_Book", "id_User", "Review") VALUES ($1, $2, $3, $4) RETURNING *',
+          [Grade, Id_Book, id_User, Review || null]
+        );
+        return res.status(201).json(retryResult.rows[0]);
+      } catch (retryError) {
+        console.error('❌ Failed to auto-fix constraint:', retryError);
+        return res.status(409).json({ 
+          error: 'UNIQUE constraint violation',
+          detail: `Constraint: ${error.constraint || 'unknown'}. Выполните: psql bookstore < database/schema.sql`,
+          constraint: error.constraint
+        });
+      }
     }
     
     res.status(500).json({ 

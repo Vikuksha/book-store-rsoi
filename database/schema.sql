@@ -105,9 +105,31 @@ CREATE TABLE IF NOT EXISTS "Reviews" (
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("Id_Book") REFERENCES "Book"("ID") ON DELETE CASCADE,
-    FOREIGN KEY ("id_User") REFERENCES "Users"("ID") ON DELETE CASCADE,
-    UNIQUE("Id_Book", "id_User") -- Один пользователь может оставить только один отзыв на книгу
+    FOREIGN KEY ("id_User") REFERENCES "Users"("ID") ON DELETE CASCADE
+    -- UNIQUE constraint удален: теперь пользователи могут оставлять несколько отзывов на одну книгу
 );
+
+-- Удаление UNIQUE constraint для таблицы Reviews (если он существует)
+-- Это позволяет пользователям оставлять несколько отзывов на одну книгу
+DO $$
+DECLARE
+    constraint_name TEXT;
+BEGIN
+    -- Ищем UNIQUE constraint по колонкам Id_Book и id_User
+    SELECT conname INTO constraint_name
+    FROM pg_constraint
+    WHERE conrelid = '"Reviews"'::regclass
+      AND contype = 'u'
+      AND array_length(conkey, 1) = 2
+      AND conkey[1] = (SELECT attnum FROM pg_attribute WHERE attrelid = '"Reviews"'::regclass AND attname = 'Id_Book')
+      AND conkey[2] = (SELECT attnum FROM pg_attribute WHERE attrelid = '"Reviews"'::regclass AND attname = 'id_User');
+    
+    -- Если constraint найден, удаляем его
+    IF constraint_name IS NOT NULL THEN
+        EXECUTE format('ALTER TABLE "Reviews" DROP CONSTRAINT IF EXISTS %I', constraint_name);
+        RAISE NOTICE 'UNIQUE constraint % удален из таблицы Reviews', constraint_name;
+    END IF;
+END $$;
 
 -- Создание таблицы Order_composition
 CREATE TABLE IF NOT EXISTS "Order_composition" (
