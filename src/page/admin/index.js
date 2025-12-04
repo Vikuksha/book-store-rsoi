@@ -6,10 +6,12 @@ import AuthService from '../../services/AuthService';
 import { getBookImage } from '../../utils/bookImageLoader';
 import Header from '../../component/Common/Header';
 import Footer from '../../component/Common/Footer';
+import Analytics from '../../component/Admin/Analytics';
 
 const AdminPanel = () => {
   const history = useHistory();
   const authService = new AuthService();
+  const [activeTab, setActiveTab] = useState('books'); // 'books' or 'analytics'
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingBook, setEditingBook] = useState(null);
@@ -35,8 +37,11 @@ const AdminPanel = () => {
       return;
     }
 
-    loadBooks();
-  }, []);
+    // Загружаем книги только если активна вкладка "books"
+    if (activeTab === 'books') {
+      loadBooks();
+    }
+  }, [activeTab]);
 
   const loadBooks = async () => {
     try {
@@ -176,7 +181,7 @@ const AdminPanel = () => {
     }));
   };
 
-  if (loading) {
+  if (loading && activeTab === 'books') {
     return (
       <>
         <Header />
@@ -197,8 +202,55 @@ const AdminPanel = () => {
             <div className="col-12">
               <div className="section-title text-center mb-50">
                 <h2>Панель администратора</h2>
-                <p>Управление книгами</p>
+                <p>Управление системой</p>
               </div>
+
+              {/* Вкладки */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                marginBottom: '30px',
+                borderBottom: '2px solid #e0e0e0'
+              }}>
+                <button
+                  onClick={() => setActiveTab('books')}
+                  style={{
+                    padding: '12px 30px',
+                    marginRight: '10px',
+                    border: 'none',
+                    backgroundColor: activeTab === 'books' ? '#3498db' : '#ecf0f1',
+                    color: activeTab === 'books' ? '#fff' : '#2c3e50',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    borderRadius: '8px 8px 0 0',
+                    transition: 'all 0.3s ease',
+                    borderBottom: activeTab === 'books' ? '3px solid #2980b9' : 'none'
+                  }}
+                >
+                  📚 Управление книгами
+                </button>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  style={{
+                    padding: '12px 30px',
+                    border: 'none',
+                    backgroundColor: activeTab === 'analytics' ? '#3498db' : '#ecf0f1',
+                    color: activeTab === 'analytics' ? '#fff' : '#2c3e50',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    borderRadius: '8px 8px 0 0',
+                    transition: 'all 0.3s ease',
+                    borderBottom: activeTab === 'analytics' ? '3px solid #2980b9' : 'none'
+                  }}
+                >
+                  📊 Аналитика
+                </button>
+              </div>
+
+              {/* Контент вкладок */}
+              {activeTab === 'books' && (
 
               <div className="table-responsive" style={{ marginTop: '30px' }}>
                 <table className="table table-bordered" style={{ backgroundColor: '#fff' }}>
@@ -365,6 +417,11 @@ const AdminPanel = () => {
                   </tbody>
                 </table>
               </div>
+              )}
+
+              {activeTab === 'analytics' && (
+                <Analytics />
+              )}
             </div>
           </div>
         </div>

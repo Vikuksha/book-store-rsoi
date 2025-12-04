@@ -17,6 +17,7 @@ const bookRoutes = require('./routes/book');
 const reviewRoutes = require('./routes/review');
 const orderRoutes = require('./routes/order');
 const basketRoutes = require('./routes/basket');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -70,6 +71,7 @@ app.use('/api/book', bookRoutes);
 app.use('/api/review', reviewRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/basket', basketRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
